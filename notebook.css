@@ -32,7 +32,7 @@
   border: none !important;
   cursor: pointer !important;
   font-size: 12px !important;
-  transition: all 0.2s ease !important;
+  /* transition: all 0.2s ease !important; */ /* Removed to eliminate animation effects */
   background: black;
 }
 
@@ -45,7 +45,7 @@
 .notebook-cell {
   /* border-bottom: 1px solid #e1e4e8; */
   position: relative;
-  transition: all 0.2s ease;
+  /* transition: all 0.2s ease; */ /* Removed to eliminate animation effects */
 }
 
 .notebook-cell:last-child {
@@ -154,7 +154,6 @@
   color: #24292f;
   font-size: 11px;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .cell-actions button:hover {
@@ -224,7 +223,6 @@
   border: 1px solid #e1e4e8;
   border-radius: 4px;
   background: #fff;
-  transition: all 0.2s ease;
   position: relative;
 }
 

@@ -367,7 +367,6 @@ function injectNotebookButton() {
       font-size: 13px;
       font-weight: 500;
       line-height: 1.4;
-      transition: all 0.2s ease;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     `;
 
@@ -400,7 +399,6 @@ function injectNotebookButton() {
       font-weight: 500;
       line-height: 1.4;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     `;
 
@@ -410,7 +408,6 @@ function injectNotebookButton() {
       const hoverColor = isNotebook ? "#73d13d" : "#40a9ff";
       this.style.background = hoverColor;
       this.style.borderColor = hoverColor;
-      this.style.transform = "translateY(-1px)";
       this.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
     });
 
@@ -419,7 +416,6 @@ function injectNotebookButton() {
       const normalColor = isNotebook ? "#52c41a" : "#1890ff";
       this.style.background = normalColor;
       this.style.borderColor = normalColor;
-      this.style.transform = "translateY(0)";
       this.style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
     });
 
