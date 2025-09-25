@@ -2,12 +2,14 @@
 
 A powerful Chrome extension that enhances your Redash experience with advanced features like notebook-style query editing, intelligent SQL completions, and table column visibility controls.
 
+https://github.com/user-attachments/assets/850850a3-5de0-4173-b62c-022cbd38ea8b
+
 ## 🚀 Installation
 
 ### Method 1: Git Clone (Recommended)
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/mdsaban/re-redash.git
 cd re-redash
 ```
 
