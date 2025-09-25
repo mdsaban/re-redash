@@ -1,0 +1,242 @@
+
+/**
+ * Re-Redash Table Column Visibility Styles
+ * Simple approach with single eye icon that changes color
+ */
+
+/* Eye icon styling */
+.column-visibility-toggle {
+  cursor: pointer;
+  margin-right: 8px;
+  font-size: 14px;
+  display: inline-block;
+  user-select: none;
+  transition: all 0.2s ease;
+  vertical-align: middle;
+  position: relative;
+  z-index: 1;
+}
+
+.column-visibility-toggle:hover {
+  transform: scale(1.2);
+  filter: brightness(1.2);
+}
+
+.column-visibility-toggle:active {
+  transform: scale(1.1);
+}
+
+/* Hidden column styling - visual styling for collapsed columns */
+.column-hidden {
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
+  background-color: rgba(255, 77, 79, 0.1) !important;
+  color: #ff4d4f !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Ensure eye icons don't interfere with sorting */
+.ant-table-column-has-sorters .column-visibility-toggle {
+  pointer-events: auto;
+  z-index: 10;
+}
+
+/* Style the parent column header to accommodate the eye icon */
+.ant-table-column-has-sorters {
+  position: relative;
+}
+
+/* Add some spacing for better visual appearance */
+.ant-table-column-has-sorters .column-visibility-toggle {
+  margin-left: 2px;
+  margin-right: 6px;
+}
+
+/* Ensure the eye icon is properly aligned with column text */
+.ant-table-column-has-sorters > * {
+  vertical-align: middle;
+}
+
+/* Enhanced accessibility for the eye icon */
+.column-visibility-toggle[aria-label] {
+  outline: none;
+}
+
+.column-visibility-toggle:focus {
+  outline: 2px solid #1890ff;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Tooltip styling */
+.column-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 9999999;
+  margin-bottom: 5px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.column-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+}
+
+/* Responsive design - smaller eye icons on mobile */
+@media (max-width: 768px) {
+  .column-visibility-toggle {
+    font-size: 12px;
+    margin-left: 4px;
+    margin-right: 1px;
+  }
+  
+  .column-tooltip {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+}
+
+/* Dark mode compatibility */
+@media (prefers-color-scheme: dark) {
+  .column-tooltip {
+    background: rgba(255, 255, 255, 0.9);
+    color: black;
+  }
+  
+  .column-tooltip::after {
+    border-top-color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .column-visibility-toggle:focus {
+    outline-color: #40a9ff;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .column-visibility-toggle {
+    font-weight: bold;
+  }
+  
+  .column-visibility-toggle:focus {
+    outline-width: 3px;
+    outline-style: solid;
+  }
+  
+  .column-tooltip {
+    background: black;
+    color: white;
+    border: 1px solid white;
+  }
+}
+
+/* Print styles - hide eye icons when printing */
+@media print {
+  .column-visibility-toggle {
+    display: none !important;
+  }
+  
+  .column-hidden {
+    width: auto !important;
+    min-width: auto !important;
+    max-width: auto !important;
+    background-color: transparent !important;
+    color: inherit !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+  }
+}
+
+/* Loading state for tables */
+.table-column-visibility-loading .column-visibility-toggle {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Smooth transitions for table layout changes */
+.ant-table {
+  transition: all 0.2s ease;
+}
+
+.ant-table th,
+.ant-table td {
+  transition: all 0.2s ease;
+}
+
+/* Ensure proper stacking context for tooltips */
+.ant-table-thead {
+  position: relative;
+  overflow: visible;
+}
+
+/* Focus ring for better accessibility */
+.column-visibility-toggle:focus-visible {
+  outline: 2px solid #1890ff;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Animation for when columns are toggled */
+@keyframes columnToggle {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.column-visibility-toggle.toggling {
+  animation: columnToggle 0.3s ease;
+}
+
+/* Hover effect for table headers with eye icons */
+.ant-table-column-has-sorters:hover .column-visibility-toggle {
+  opacity: 1;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .column-visibility-toggle,
+  .column-tooltip,
+  .ant-table th,
+  .ant-table td {
+    transition: none;
+  }
+  
+  .column-visibility-toggle:hover {
+    transform: none;
+    filter: none;
+  }
+  
+  .column-visibility-toggle.toggling {
+    animation: none;
+  }
+}
