@@ -1367,7 +1367,7 @@ function createCellElement(cell, index) {
       <div class="cell-editor-wrapper" data-cell-index="${index}"></div>
       <div class="cell-actions">
         <button class="cell-execute-btn" data-cell-index="${index}" title="Execute Cell (Shift+Enter)">
-          <span class="zmdi zmdi-play"></span> Run 
+          <span class="zmdi zmdi-play"></span> 
         </button>
         <button class="cell-add-btn" data-cell-index="${index}" title="Add New Cell">
           <i class="zmdi zmdi-plus"></i>

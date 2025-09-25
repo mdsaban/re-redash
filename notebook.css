@@ -247,7 +247,8 @@
 }
 
 .cell-editor-wrapper .ace_content {
-  padding: 10px 12px;
+  padding: 0px 12px 4px;
+  margin-top: 4px;
 }
 
 .cell-editor-wrapper .ace_scroller {
