@@ -554,19 +554,26 @@ function refreshAllCellCompletions() {
  * @param {Event} e - Click event
  */
 function handleClick(e) {
-  if (e.target.classList.contains("notebook-toggle-btn")) {
+  // Find the closest button element that has one of our target classes
+  const targetButton = e.target.closest(
+    ".notebook-toggle-btn, .cell-execute-btn, .cell-add-btn, .cell-copy-btn, .cell-delete-btn"
+  );
+
+  if (!targetButton) return;
+
+  if (targetButton.classList.contains("notebook-toggle-btn")) {
     toggleNotebookMode();
-  } else if (e.target.classList.contains("cell-execute-btn")) {
-    const cellIndex = parseInt(e.target.dataset.cellIndex);
+  } else if (targetButton.classList.contains("cell-execute-btn")) {
+    const cellIndex = parseInt(targetButton.dataset.cellIndex);
     executeCell(cellIndex);
-  } else if (e.target.classList.contains("cell-add-btn")) {
-    const cellIndex = parseInt(e.target.dataset.cellIndex);
+  } else if (targetButton.classList.contains("cell-add-btn")) {
+    const cellIndex = parseInt(targetButton.dataset.cellIndex);
     addNewCell(cellIndex + 1);
-  } else if (e.target.classList.contains("cell-copy-btn")) {
-    const cellIndex = parseInt(e.target.dataset.cellIndex);
+  } else if (targetButton.classList.contains("cell-copy-btn")) {
+    const cellIndex = parseInt(targetButton.dataset.cellIndex);
     copyCell(cellIndex);
-  } else if (e.target.classList.contains("cell-delete-btn")) {
-    const cellIndex = parseInt(e.target.dataset.cellIndex);
+  } else if (targetButton.classList.contains("cell-delete-btn")) {
+    const cellIndex = parseInt(targetButton.dataset.cellIndex);
     deleteCell(cellIndex);
   }
 }
@@ -1356,7 +1363,7 @@ function createCellElement(cell, index) {
   cellDiv.className = `${notebookState.config.cellClass}`;
   cellDiv.innerHTML = `
     <div class="cell-input-container">
-      <div>${index + 1}</div>
+      <div style="padding-top: 4px; min-width: 20px">${index + 1}</div>
       <div class="cell-editor-wrapper" data-cell-index="${index}"></div>
       <div class="cell-actions">
         <button class="cell-execute-btn" data-cell-index="${index}" title="Execute Cell (Shift+Enter)">
@@ -1369,7 +1376,7 @@ function createCellElement(cell, index) {
           <i class="zmdi zmdi-copy"></i>
         </button>
         <button class="cell-delete-btn" data-cell-index="${index}" title="Delete Cell">
-          <i class="zmdi zmdi-delete" style="color: black"></i>
+          <i class="zmdi zmdi-delete"></i>
         </button>
       </div>
     </div>

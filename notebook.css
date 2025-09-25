@@ -13,6 +13,7 @@
   margin:0;
   flex: 1 1 auto;
   overflow: scroll;
+  padding-top: 8px;
 }
 
 .notebook-toggle-btn {
@@ -42,7 +43,7 @@
 
 /* Individual cell styles */
 .notebook-cell {
-  border-bottom: 1px solid #e1e4e8;
+  /* border-bottom: 1px solid #e1e4e8; */
   position: relative;
   transition: all 0.2s ease;
 }
@@ -167,11 +168,21 @@
   border-color: #28a745 !important;
 }
 
+.cell-execute-btn:hover {
+  color: white !important;
+  background: #28a745 !important;
+}
+
 .cell-add-btn {
   width: max-content;
   background: white !important;
   color: black !important;
   border-color: #75797e !important;
+}
+
+.cell-add-btn:hover {
+  color: white !important;
+  background: black !important;
 }
 
 .cell-copy-btn {
@@ -188,17 +199,18 @@
 
 .cell-delete-btn {
   background: white !important;
-  color: white !important;
+  color: black !important;
   border-color: #dc3545 !important;
 }
 
 .cell-delete-btn:hover {
+  color: white !important;
   background: #c82333 !important;
 }
 
 /* Cell input container */
 .cell-input-container {
-  padding: 10px 15px;
+  padding: 4px 15px 0;
   background: #fff;
   display: flex;
   align-items: flex-start;
