@@ -422,7 +422,7 @@ function injectNotebookButton() {
     notebookToggle.addEventListener("click", toggleNotebookMode);
 
     // Fallback to body if controls not found
-    document.body.appendChild(notebookToggle);
+    // document.body.appendChild(notebookToggle);
 
     // Set initial appearance based on current state
     setTimeout(() => {
