@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Re-Redash Notebook Test</title>
+    <link rel="stylesheet" href="notebook.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 20px;
+            background: #f6f8fa;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .ace_editor {
+            width: 100%;
+            height: 200px;
+            border: 1px solid #e1e4e8;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+        }
+        
+        .demo-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px dashed #e1e4e8;
+            border-radius: 8px;
+        }
+        
+        .demo-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #24292f;
+        }
+        
+        .demo-description {
+            color: #656d76;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Re-Redash Notebook Test Page</h1>
+        <p>This page demonstrates the notebook functionality for transforming SQL queries into Jupyter-like cells.</p>
+        
+        <div class="demo-section">
+            <div class="demo-title">📝 Original Textarea (Simulated)</div>
+            <div class="demo-description">
+                This simulates the original Redash query editor. Enter multiple queries separated by semicolons:
+            </div>
+            <div class="ace_editor" id="ace-editor">
+                <textarea style="width: 100%; height: 180px; padding: 10px; font-family: monospace; border: none; resize: none;">select * from users where active = true;
+
+select count(*) from orders 
+where created_at >= '2024-01-01';
+
+select product_name, sum(quantity) as total_sold
+from order_items oi
+join products p on oi.product_id = p.id
+group by product_name
+order by total_sold desc
+limit 10;</textarea>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <div class="demo-title">📓 Notebook View</div>
+            <div class="demo-description">
+                Click "Notebook Mode" to transform the queries into separate cells:
+            </div>
+            <!-- Notebook container will be inserted here -->
+        </div>
+        
+        <div class="demo-section">
+            <div class="demo-title">🔧 Features</div>
+            <div class="demo-description">
+                <ul>
+                    <li><strong>Query Separation:</strong> Automatically splits queries by semicolons (;)</li>
+                    <li><strong>Individual Execution:</strong> Run each query independently</li>
+                    <li><strong>Keyboard Shortcuts:</strong> Shift+Enter to run, Ctrl+Enter to run and add new cell</li>
+                    <li><strong>Cell Management:</strong> Add, delete, and reorder cells</li>
+                    <li><strong>Output Display:</strong> Shows query results in notebook format</li>
+                    <li><strong>Status Tracking:</strong> Visual indicators for ready/running/completed/error states</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <div class="demo-title">🎯 Usage Instructions</div>
+            <div class="demo-description">
+                <ol>
+                    <li>The notebook functionality automatically initializes when the page loads</li>
+                    <li>Look for the "📓 Notebook Mode" button (usually appears near the query editor)</li>
+                    <li>Click the button to switch between Text Mode and Notebook Mode</li>
+                    <li>In Notebook Mode, each query ending with ';' becomes a separate cell</li>
+                    <li>Use the cell controls to execute, add, or delete cells</li>
+                    <li>Switch back to Text Mode to return to the original editor</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simulate ace editor -->
+    <script>
+        // Mock ace editor for testing
+        window.ace = {
+            edit: function(element) {
+                const textarea = typeof element === 'string' 
+                    ? document.getElementById(element).querySelector('textarea')
+                    : element.querySelector('textarea');
+                
+                return {
+                    getValue: function() {
+                        return textarea.value;
+                    },
+                    setValue: function(value, cursorPos) {
+                        textarea.value = value;
+                        if (cursorPos === 1) {
+                            textarea.selectionStart = textarea.selectionEnd = value.length;
+                        }
+                    },
+                    on: function(event, callback) {
+                        if (event === 'change') {
+                            textarea.addEventListener('input', callback);
+                        } else if (event === 'paste') {
+                            textarea.addEventListener('paste', callback);
+                        } else if (event === 'focus') {
+                            textarea.addEventListener('focus', callback);
+                        }
+                    }
+                };
+            }
+        };
+    </script>
+    
+    <!-- Load the notebook functionality -->
+    <script src="notebook.js"></script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+
+/**
+ * Re-Redash Notebook Styles
+ * Jupyter notebook-like styling for SQL query cells
+ */
+
+/* Main notebook container */
+.notebook-container {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #fff;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  margin:0;
+  flex: 1 1 auto;
+  overflow: scroll;
+  padding-top: 8px;
+}
+
+.notebook-toggle-btn {
+  background: #0969da !important;
+  color: white !important;
+  border-color: #0969da !important;
+}
+
+.notebook-toggle-btn:hover {
+  background: #0860ca !important;
+}
+
+.notebook-mode-toggle {
+  padding: 8px 12px !important;
+  color: white !important;
+  border: none !important;
+  cursor: pointer !important;
+  font-size: 12px !important;
+  /* transition: all 0.2s ease !important; */ /* Removed to eliminate animation effects */
+  background: black;
+}
+
+/* Notebook cells container */
+.notebook-cells {
+  padding: 0;
+}
+
+/* Individual cell styles */
+.notebook-cell {
+  /* border-bottom: 1px solid #e1e4e8; */
+  position: relative;
+  /* transition: all 0.2s ease; */ /* Removed to eliminate animation effects */
+}
+
+.notebook-cell:last-child {
+  border-bottom: none;
+}
+
+.notebook-cell:hover {
+  background: #fafbfc;
+}
+
+/* Active/focused cell styling */
+.notebook-cell.cell-focused {
+  background: #f6f8fa;
+  border-left: 3px solid #0969da;
+}
+
+.notebook-cell.cell-focused .cell-editor-wrapper {
+  border-color: #0969da;
+  box-shadow: 0 0 0 2px rgba(9, 105, 218, 0.1);
+}
+
+/* Cell status variants */
+.cell-ready {
+  border-left: 4px solid #28a745;
+}
+
+.cell-running {
+  border-left: 4px solid #ffc107;
+  background: #fff8e1;
+}
+
+.cell-completed {
+  border-left: 4px solid #28a745;
+  background: #f0f8f0;
+}
+
+.cell-error {
+  border-left: 4px solid #dc3545;
+  background: #fdf2f2;
+}
+
+/* Cell header */
+.cell-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 15px;
+  background: #f6f8fa;
+  border-bottom: 1px solid #e1e4e8;
+  font-size: 12px;
+}
+
+.cell-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cell-label {
+  font-weight: 600;
+  color: #0969da;
+  font-family: 'Monaco', 'Consolas', monospace;
+  min-width: 60px;
+}
+
+.cell-status {
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.cell-ready .cell-status {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.cell-running .cell-status {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.cell-completed .cell-status {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.cell-error .cell-status {
+  background: #fecaca;
+  color: #dc2626;
+}
+
+/* Cell actions */
+.cell-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.cell-actions button {
+  padding: 4px 8px;
+  border: 1px solid #d0d7de;
+  border-radius: 3px;
+  background: #fff;
+  color: #24292f;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.cell-actions button:hover {
+  background: #f3f4f6;
+}
+
+.cell-execute-btn {
+  width: max-content;
+  background: white !important;
+  color: black !important;
+  border-color: #28a745 !important;
+}
+
+.cell-execute-btn:hover {
+  color: white !important;
+  background: #28a745 !important;
+}
+
+.cell-add-btn {
+  width: max-content;
+  background: white !important;
+  color: black !important;
+  border-color: #75797e !important;
+}
+
+.cell-add-btn:hover {
+  color: white !important;
+  background: black !important;
+}
+
+.cell-copy-btn {
+  width: max-content;
+  background: white !important;
+  color: black !important;
+  border-color: #007bff !important;
+}
+
+.cell-copy-btn:hover {
+  background: #007bff !important;
+  color: white !important;
+}
+
+.cell-delete-btn {
+  background: white !important;
+  color: black !important;
+  border-color: #dc3545 !important;
+}
+
+.cell-delete-btn:hover {
+  color: white !important;
+  background: #c82333 !important;
+}
+
+/* Cell input container */
+.cell-input-container {
+  padding: 4px 15px 0;
+  background: #fff;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* Cell editor wrapper for Ace Editor */
+.cell-editor-wrapper {
+  width: 100%;
+  min-height: 45px;
+  border: 1px solid #e1e4e8;
+  border-radius: 4px;
+  background: #fff;
+  position: relative;
+}
+
+.cell-editor-wrapper:hover {
+  border-color: #8c959f;
+}
+
+.cell-editor-wrapper.ace_focus {
+  border-color: #0969da;
+  box-shadow: 0 0 0 2px rgba(9, 105, 218, 0.1);
+}
+
+/* Ace Editor specific styles for cells */
+.cell-editor-wrapper .ace_editor {
+  font-family: 'Monaco', 'Consolas', 'Courier New', monospace !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  border: none !important;
+  border-radius: 4px;
+}
+
+.cell-editor-wrapper .ace_content {
+  padding: 0px 0px 4px;
+  margin-top: 4px;
+}
+
+.cell-editor-wrapper .ace_scroller {
+  background: #fff !important;
+}
+
+.cell-editor-wrapper .ace_cursor {
+  color: #24292f !important;
+}
+
+/* Focus state for Ace Editor */
+.cell-editor-wrapper .ace_editor.ace_focus {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Fallback textarea styles */
+.fallback-textarea {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  resize: vertical;
+  background: transparent;
+  outline: none;
+  min-height: 20px;
+}
+
+.fallback-textarea::placeholder {
+  color: #8c959f;
+  font-style: italic;
+}
+
+/* Textarea wrapper for completion dropdown positioning */
+.textarea-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Completion dropdown styles */
+.completion-dropdown {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.completion-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f6f8fa;
+}
+
+.completion-item:last-child {
+  border-bottom: none;
+}
+
+.completion-item:hover,
+.completion-item.selected {
+  background: #f6f8fa;
+}
+
+.completion-item.selected {
+  background: #dbeafe;
+  border-color: #bfdbfe;
+}
+
+.completion-value {
+  font-weight: 500;
+  color: #24292f;
+}
+
+.completion-meta {
+  font-size: 10px;
+  color: #656d76;
+  background: #f6f8fa;
+  padding: 2px 6px;
+  border-radius: 12px;
+  margin-left: 8px;
+}
+
+.completion-item.selected .completion-meta {
+  background: #bfdbfe;
+  color: #1e40af;
+}
+
+/* Scrollbar styling for completion dropdown */
+.completion-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.completion-dropdown::-webkit-scrollbar-track {
+  background: #f6f8fa;
+}
+
+.completion-dropdown::-webkit-scrollbar-thumb {
+  background: #d0d7de;
+  border-radius: 3px;
+}
+
+.completion-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #8c959f;
+}
+
+/* Cell output container */
+.cell-output-container {
+  padding: 10px 15px;
+  background: #f8f9fa;
+  border-top: 1px solid #e1e4e8;
+}
+
+.cell-output-label {
+  font-weight: 600;
+  color: #0969da;
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.cell-output {
+  background: #fff;
+  border: 1px solid #e1e4e8;
+  border-radius: 4px;
+  padding: 10px;
+  font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Error output styling */
+.cell-error .cell-output {
+  background: #fdf2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+/* Running animation */
+.cell-running .cell-execute-btn {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .notebook-container {
+    margin: 5px 0;
+    border-radius: 4px;
+  }
+  
+  .cell-header {
+    padding: 6px 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  
+  .cell-actions {
+    align-self: flex-end;
+  }
+  
+  .cell-input-container,
+  .cell-output-container {
+    padding: 8px 10px;
+  }
+  
+  .cell-input {
+    font-size: 12px;
+    min-height: 50px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .cell-actions {
+    display: none;
+  }
+  
+  .notebook-container {
+    border: none;
+    box-shadow: none;
+  }
+  
+  .notebook-cell {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
