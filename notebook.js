@@ -36,9 +36,15 @@ function saveNotebookModePreference(isNotebookMode) {
       "re-redash-notebook-mode",
       JSON.stringify(isNotebookMode)
     );
-    console.log("Re-Redash: Saved notebook mode preference:", isNotebookMode);
+    customLogger.log(
+      "Re-Redash: Saved notebook mode preference:",
+      isNotebookMode
+    );
   } catch (error) {
-    console.warn("Re-Redash: Failed to save notebook mode preference:", error);
+    customLogger.warn(
+      "Re-Redash: Failed to save notebook mode preference:",
+      error
+    );
   }
 }
 
@@ -51,11 +57,17 @@ function loadNotebookModePreference() {
     const saved = localStorage.getItem("re-redash-notebook-mode");
     if (saved !== null) {
       const preference = JSON.parse(saved);
-      console.log("Re-Redash: Loaded notebook mode preference:", preference);
+      customLogger.log(
+        "Re-Redash: Loaded notebook mode preference:",
+        preference
+      );
       return preference;
     }
   } catch (error) {
-    console.warn("Re-Redash: Failed to load notebook mode preference:", error);
+    customLogger.warn(
+      "Re-Redash: Failed to load notebook mode preference:",
+      error
+    );
   }
   return null;
 }
@@ -98,7 +110,7 @@ function initNotebook(config = {}) {
   const retryInterval = 1000; // 1 second
 
   function tryInitialize() {
-    console.log(
+    customLogger.log(
       `Re-Redash: Initialization attempt ${retryCount + 1}/${maxRetries}`
     );
 
@@ -108,7 +120,9 @@ function initNotebook(config = {}) {
       // Restore saved notebook mode preference
       const savedPreference = loadNotebookModePreference();
       if (savedPreference === true) {
-        console.log("Re-Redash: Restoring notebook mode from saved preference");
+        customLogger.log(
+          "Re-Redash: Restoring notebook mode from saved preference"
+        );
         // Small delay to ensure editor is fully ready
         setTimeout(() => {
           switchToNotebookMode();
@@ -124,18 +138,20 @@ function initNotebook(config = {}) {
         }, 100);
       }
 
-      console.log("Re-Redash: Notebook module initialized successfully");
+      customLogger.log("Re-Redash: Notebook module initialized successfully");
       return;
     }
 
     retryCount++;
     if (retryCount < maxRetries) {
-      console.log(
+      customLogger.log(
         `Re-Redash: Editor not found, retrying in ${retryInterval}ms...`
       );
       setTimeout(tryInitialize, retryInterval);
     } else {
-      console.warn("Re-Redash: Failed to find editor after maximum retries");
+      customLogger.warn(
+        "Re-Redash: Failed to find editor after maximum retries"
+      );
       // Still inject button for manual retry
       injectNotebookButton();
     }
@@ -153,11 +169,11 @@ function initNotebook(config = {}) {
  * Find and store reference to Ace Editor with enhanced detection
  */
 function findAceEditor() {
-  console.log("Re-Redash: Searching for Ace Editor...");
+  customLogger.log("Re-Redash: Searching for Ace Editor...");
 
   // Method 1: Try to find existing ace editor instances
   if (window.ace && window.ace.edit) {
-    console.log("Re-Redash: window.ace is available");
+    customLogger.log("Re-Redash: window.ace is available");
 
     // Try finding by common selectors
     const selectors = [
@@ -173,7 +189,7 @@ function findAceEditor() {
     for (const selector of selectors) {
       const element = document.querySelector(selector);
       if (element) {
-        console.log(`Re-Redash: Found element with selector: ${selector}`);
+        customLogger.log(`Re-Redash: Found element with selector: ${selector}`);
         try {
           if (element.classList.contains("ace_editor")) {
             notebookState.aceEditor = window.ace.edit(element);
@@ -181,11 +197,13 @@ function findAceEditor() {
               element.closest(
                 ".query-editor, .ace-editor-container, .editor-container"
               ) || element.parentElement;
-            console.log("Re-Redash: Successfully created ace editor instance");
+            customLogger.log(
+              "Re-Redash: Successfully created ace editor instance"
+            );
             return true;
           }
         } catch (error) {
-          console.warn(
+          customLogger.warn(
             `Re-Redash: Failed to create ace editor from element:`,
             error
           );
@@ -208,7 +226,7 @@ function findAceEditor() {
         notebookState.originalContainer =
           document.querySelector(".query-editor, .editor-container") ||
           document.body;
-        console.log(`Re-Redash: Found editor in window.${name}`);
+        customLogger.log(`Re-Redash: Found editor in window.${name}`);
         return true;
       }
     }
@@ -222,14 +240,14 @@ function findAceEditor() {
       ) || document.querySelector("textarea");
 
     if (textarea) {
-      console.log("Re-Redash: Using textarea fallback");
+      customLogger.log("Re-Redash: Using textarea fallback");
       notebookState.aceEditor = createTextareaWrapper(textarea);
       notebookState.originalContainer = textarea.parentElement;
       return true;
     }
   }
 
-  console.warn("Re-Redash: No suitable editor found");
+  customLogger.warn("Re-Redash: No suitable editor found");
   return false;
 }
 
@@ -252,7 +270,7 @@ function findRedashContainer(element) {
   for (const containerSelector of containers) {
     const container = element.closest(containerSelector);
     if (container) {
-      console.log(`Re-Redash: Found container: ${containerSelector}`);
+      customLogger.log(`Re-Redash: Found container: ${containerSelector}`);
       return container;
     }
   }
@@ -339,7 +357,7 @@ function createNotebookContainer() {
 function injectNotebookButton() {
   // Don't inject if button already exists
   if (document.querySelector(".notebook-mode-toggle")) {
-    console.log("Re-Redash: Notebook button already exists");
+    customLogger.log("Re-Redash: Notebook button already exists");
     return;
   }
 
@@ -380,7 +398,7 @@ function injectNotebookButton() {
         updateToggleButtonAppearance(notebookState.isNotebookMode);
       }, 100);
     }, 1000);
-    console.log("Re-Redash: Notebook button injected in query controls");
+    customLogger.log("Re-Redash: Notebook button injected in query controls");
   } else {
     // Fallback to fixed positioning if controls not found
     // notebookToggle.style.cssText = `
@@ -429,7 +447,9 @@ function injectNotebookButton() {
       updateToggleButtonAppearance(notebookState.isNotebookMode);
     }, 50);
 
-    console.log("Re-Redash: Notebook button injected in top-right (fallback)");
+    customLogger.log(
+      "Re-Redash: Notebook button injected in top-right (fallback)"
+    );
   }
 }
 
@@ -454,7 +474,7 @@ function setupEventListeners() {
  */
 function handleDataSourceChange(event) {
   const { newDataSource, completionData } = event.detail;
-  console.log(
+  customLogger.log(
     "Re-Redash: Handling data source change in notebook:",
     newDataSource
   );
@@ -468,7 +488,7 @@ function handleDataSourceChange(event) {
  * @param {CustomEvent} event - Completions loaded event
  */
 function handleCompletionsLoaded(event) {
-  console.log("Re-Redash: Completions loaded event received in notebook");
+  customLogger.log("Re-Redash: Completions loaded event received in notebook");
 
   // Refresh completions for all active cell editors
   refreshAllCellCompletions();
@@ -479,7 +499,9 @@ function handleCompletionsLoaded(event) {
  */
 function refreshAllCellCompletions() {
   if (!window.CompletionHandler || !window.CompletionHandler.isLoaded()) {
-    console.log("Re-Redash: CompletionHandler not available or not loaded yet");
+    customLogger.log(
+      "Re-Redash: CompletionHandler not available or not loaded yet"
+    );
     return;
   }
 
@@ -488,7 +510,7 @@ function refreshAllCellCompletions() {
     Object.keys(notebookState.cellEditors).forEach((index) => {
       const cellEditor = notebookState.cellEditors[index];
       if (cellEditor && cellEditor.completers) {
-        console.log(`Re-Redash: Refreshing completions for cell ${index}`);
+        customLogger.log(`Re-Redash: Refreshing completions for cell ${index}`);
 
         // Create new completer with updated completions
         const allCompletionsCompleter = {
@@ -525,7 +547,7 @@ function refreshAllCellCompletions() {
         // Replace the completers with updated ones
         cellEditor.completers = [allCompletionsCompleter];
 
-        console.log(
+        customLogger.log(
           `Re-Redash: Updated completions for cell ${index} - ${
             window.CompletionHandler.getAllCompletions().length
           } completions available`
@@ -536,7 +558,7 @@ function refreshAllCellCompletions() {
 
   // Also refresh the main editor if in text mode
   if (notebookState.aceEditor && notebookState.aceEditor.completers) {
-    console.log("Re-Redash: Refreshing completions for main editor");
+    customLogger.log("Re-Redash: Refreshing completions for main editor");
 
     // Restore original completers for main editor
     if (window.CompletionHandler.restoreCompletersTo) {
@@ -666,7 +688,7 @@ function handleKeydown(e) {
 function createCellAceEditor(cellDiv, cell, index) {
   const editorWrapper = cellDiv.querySelector(".cell-editor-wrapper");
   if (!editorWrapper || !window.ace) {
-    console.warn(
+    customLogger.warn(
       "Re-Redash: Cannot create cell editor - missing wrapper or Ace"
     );
     createFallbackTextarea(editorWrapper, cell, index);
@@ -750,7 +772,7 @@ function createCellAceEditor(cellDiv, cell, index) {
         },
       };
 
-      console.log(allCompletionsCompleter, cellEditor.completers);
+      customLogger.log(allCompletionsCompleter, cellEditor.completers);
 
       // Initialize completers array if it doesn't exist
       if (!cellEditor.completers) {
@@ -759,23 +781,26 @@ function createCellAceEditor(cellDiv, cell, index) {
 
       // Push the getAllCompletions completer
       cellEditor.completers = [allCompletionsCompleter];
-      console.log(cellEditor.completers);
+      customLogger.log(cellEditor.completers);
 
-      console.log(
+      customLogger.log(
         "Re-Redash: Added getAllCompletions completer for cell",
         index
       );
-      console.log(
+      customLogger.log(
         "Re-Redash: Cell editor now has",
         cellEditor.completers.length,
         "completers"
       );
-      console.log(
+      customLogger.log(
         "Re-Redash: Available completions:",
         window.CompletionHandler.getAllCompletions().length
       );
     } else {
-      console.log("Re-Redash: CompletionHandler not available for cell", index);
+      customLogger.log(
+        "Re-Redash: CompletionHandler not available for cell",
+        index
+      );
     }
 
     // Set up event listeners
@@ -859,11 +884,11 @@ function createCellAceEditor(cellDiv, cell, index) {
       },
     });
 
-    console.log(
+    customLogger.log(
       `Re-Redash: Created Ace editor for cell ${index} with completion handler integration`
     );
   } catch (error) {
-    console.warn(
+    customLogger.warn(
       `Re-Redash: Failed to create Ace editor for cell ${index}:`,
       error
     );
@@ -902,7 +927,7 @@ function createFallbackTextarea(wrapper, cell, index) {
  */
 function showCompletions(textarea) {
   if (!window.CompletionHandler || !window.CompletionHandler.isLoaded()) {
-    console.warn("Re-Redash: Completion handler not loaded");
+    customLogger.warn("Re-Redash: Completion handler not loaded");
     return;
   }
 
@@ -1203,8 +1228,8 @@ function toggleNotebookMode() {
  * Switch to notebook mode
  */
 function switchToNotebookMode() {
-  console.log("Re-Redash: Attempting to switch to notebook mode...");
-  console.log("Re-Redash: CompletionHandler state before switch:", {
+  customLogger.log("Re-Redash: Attempting to switch to notebook mode...");
+  customLogger.log("Re-Redash: CompletionHandler state before switch:", {
     available: !!window.CompletionHandler,
     loaded: window.CompletionHandler
       ? window.CompletionHandler.isLoaded()
@@ -1216,7 +1241,7 @@ function switchToNotebookMode() {
 
   // Try to re-find editor if not available
   if (!notebookState.aceEditor) {
-    console.log("Re-Redash: Editor not found, attempting to re-detect...");
+    customLogger.log("Re-Redash: Editor not found, attempting to re-detect...");
     if (!findAceEditor()) {
       alert(
         "Cannot find the query editor. Please make sure you are on a query editing page and try refreshing."
@@ -1225,13 +1250,13 @@ function switchToNotebookMode() {
     }
   }
 
-  console.log(
+  customLogger.log(
     "Re-Redash: Main editor completers before switch:",
     notebookState.aceEditor.completers
       ? notebookState.aceEditor.completers.length
       : "undefined"
   );
-  console.log(
+  customLogger.log(
     "Re-Redash: Main editor completers details:",
     notebookState.aceEditor.completers
       ? notebookState.aceEditor.completers.map(
@@ -1252,7 +1277,7 @@ function switchToNotebookMode() {
         editor.closest(
           ".query-editor, .editor-container, .ace-editor-container"
         ) || editor.parentElement;
-      console.log("Re-Redash: Found container for editor");
+      customLogger.log("Re-Redash: Found container for editor");
     } else {
       alert(
         "Cannot find the editor container. Please refresh the page and try again."
@@ -1264,7 +1289,7 @@ function switchToNotebookMode() {
   try {
     // Get current content from ace editor
     const content = notebookState.aceEditor.getValue();
-    console.log(
+    customLogger.log(
       "Re-Redash: Retrieved content from editor:",
       content.length,
       "characters"
@@ -1272,7 +1297,11 @@ function switchToNotebookMode() {
 
     // Parse queries into cells
     notebookState.cells = parseQueries(content);
-    console.log("Re-Redash: Parsed", notebookState.cells.length, "queries");
+    customLogger.log(
+      "Re-Redash: Parsed",
+      notebookState.cells.length,
+      "queries"
+    );
 
     // Hide original editor
     notebookState.originalContainer.style.display = "none";
@@ -1299,18 +1328,18 @@ function switchToNotebookMode() {
     // Update toggle button appearance
     updateToggleButtonAppearance(true);
 
-    console.log("Re-Redash: Successfully switched to notebook mode");
-    console.log(
+    customLogger.log("Re-Redash: Successfully switched to notebook mode");
+    customLogger.log(
       "Re-Redash: Notebook mode activated. Created",
       notebookState.cells.length,
       "cells"
     );
-    console.log(
+    customLogger.log(
       "Re-Redash: Cell editors created:",
       Object.keys(notebookState.cellEditors).length
     );
   } catch (error) {
-    console.error("Re-Redash: Error switching to notebook mode:", error);
+    customLogger.error("Re-Redash: Error switching to notebook mode:", error);
     alert(
       "An error occurred while switching to notebook mode. Check the console for details."
     );
@@ -1330,7 +1359,7 @@ function switchToTextMode() {
       try {
         notebookState.cellEditors[index].destroy();
       } catch (error) {
-        console.warn(
+        customLogger.warn(
           `Re-Redash: Failed to destroy cell editor ${index}:`,
           error
         );
@@ -1353,7 +1382,7 @@ function switchToTextMode() {
   // Update toggle button appearance
   updateToggleButtonAppearance(false);
 
-  console.log("Re-Redash: Switched to text mode");
+  customLogger.log("Re-Redash: Switched to text mode");
 }
 
 /**
@@ -1471,7 +1500,7 @@ function addNewCell(position = null) {
  */
 function copyCell(index) {
   if (index < 0 || index >= notebookState.cells.length) {
-    console.warn("Re-Redash: Invalid cell index for copy:", index);
+    customLogger.warn("Re-Redash: Invalid cell index for copy:", index);
     return;
   }
 
@@ -1483,7 +1512,10 @@ function copyCell(index) {
     try {
       cellContent = notebookState.cellEditors[index].getValue();
     } catch (error) {
-      console.warn("Re-Redash: Failed to get content from cell editor:", error);
+      customLogger.warn(
+        "Re-Redash: Failed to get content from cell editor:",
+        error
+      );
       // Fallback to stored content
       cellContent = notebookState.cells[index].content || "";
     }
@@ -1515,12 +1547,14 @@ function copyCell(index) {
       try {
         cellEditors[insertPosition].focus();
       } catch (error) {
-        console.warn("Re-Redash: Failed to focus copied cell:", error);
+        customLogger.warn("Re-Redash: Failed to focus copied cell:", error);
       }
     }
   }, 200);
 
-  console.log(`Re-Redash: Copied cell ${index} with content: "${cellContent}"`);
+  customLogger.log(
+    `Re-Redash: Copied cell ${index} with content: "${cellContent}"`
+  );
 }
 
 /**
@@ -1601,7 +1635,7 @@ function updateCellFocusState(index) {
   );
   if (targetCell) {
     targetCell.classList.add("cell-focused");
-    console.log(`Re-Redash: Updated focus state for cell ${index}`);
+    customLogger.log(`Re-Redash: Updated focus state for cell ${index}`);
   }
 }
 
@@ -1616,10 +1650,10 @@ function focusCell(index) {
   if (notebookState.cellEditors && notebookState.cellEditors[index]) {
     try {
       notebookState.cellEditors[index].focus();
-      console.log(`Re-Redash: Focused cell ${index} (Ace editor)`);
+      customLogger.log(`Re-Redash: Focused cell ${index} (Ace editor)`);
       return;
     } catch (error) {
-      console.warn("Re-Redash: Failed to focus Ace editor:", error);
+      customLogger.warn("Re-Redash: Failed to focus Ace editor:", error);
     }
   }
 
@@ -1629,11 +1663,11 @@ function focusCell(index) {
   );
   if (textarea) {
     textarea.focus();
-    console.log(`Re-Redash: Focused cell ${index} (textarea)`);
+    customLogger.log(`Re-Redash: Focused cell ${index} (textarea)`);
     return;
   }
 
-  console.warn(`Re-Redash: Could not focus cell ${index}`);
+  customLogger.warn(`Re-Redash: Could not focus cell ${index}`);
 }
 
 /**
@@ -1648,7 +1682,7 @@ function deleteCell(index) {
         notebookState.cellEditors[index].destroy();
         delete notebookState.cellEditors[index];
       } catch (error) {
-        console.warn(
+        customLogger.warn(
           `Re-Redash: Failed to destroy cell editor ${index}:`,
           error
         );
@@ -1686,13 +1720,15 @@ function deleteCell(index) {
  * @param {Object} options - Search options
  */
 function findAndExecuteQuery(searchText = "SELECT", options = {}) {
-  console.log(`Re-Redash: Searching for text: "${searchText}"`);
+  customLogger.log(`Re-Redash: Searching for text: "${searchText}"`);
 
   // Ensure we have an ace editor
   if (!notebookState.aceEditor) {
-    console.log("Re-Redash: No ace editor found, attempting to find one...");
+    customLogger.log(
+      "Re-Redash: No ace editor found, attempting to find one..."
+    );
     if (!findAceEditor()) {
-      console.warn("Re-Redash: Cannot find ace editor for selection");
+      customLogger.warn("Re-Redash: Cannot find ace editor for selection");
       return false;
     }
   }
@@ -1713,7 +1749,7 @@ function findAndExecuteQuery(searchText = "SELECT", options = {}) {
       };
 
       search.set(searchOptions);
-      console.log("Re-Redash: Search options set:", searchOptions);
+      customLogger.log("Re-Redash: Search options set:", searchOptions);
 
       // Find the text in the editor
       const range = search.find(notebookState.aceEditor.session);
@@ -1721,7 +1757,7 @@ function findAndExecuteQuery(searchText = "SELECT", options = {}) {
       if (range) {
         // Set the selection to the found range
         notebookState.aceEditor.selection.setRange(range);
-        console.log("Re-Redash: Text found and selected successfully");
+        customLogger.log("Re-Redash: Text found and selected successfully");
 
         // Wait a bit for selection to register, then execute
         setTimeout(() => {
@@ -1730,15 +1766,17 @@ function findAndExecuteQuery(searchText = "SELECT", options = {}) {
 
         return true;
       } else {
-        console.warn(`Re-Redash: Text "${searchText}" not found in editor`);
+        customLogger.warn(
+          `Re-Redash: Text "${searchText}" not found in editor`
+        );
         return false;
       }
     } else {
-      console.warn("Re-Redash: Ace editor Search not available");
+      customLogger.warn("Re-Redash: Ace editor Search not available");
       return false;
     }
   } catch (error) {
-    console.error("Re-Redash: Error searching for text:", error);
+    customLogger.error("Re-Redash: Error searching for text:", error);
     return false;
   }
 }
@@ -1747,13 +1785,13 @@ function findAndExecuteQuery(searchText = "SELECT", options = {}) {
  * Execute the currently selected query by clicking the execute button
  */
 function executeSelectedQuery() {
-  console.log("Re-Redash: Attempting to execute selected query...");
+  customLogger.log("Re-Redash: Attempting to execute selected query...");
 
   // Try to find the execute button with data-test="ExecuteButton"
   const executeButton = document.querySelector('[data-test="ExecuteButton"]');
 
   if (executeButton) {
-    console.log("Re-Redash: Found execute button, simulating click...");
+    customLogger.log("Re-Redash: Found execute button, simulating click...");
 
     // Simulate a click event
     const clickEvent = new MouseEvent("click", {
@@ -1763,10 +1801,10 @@ function executeSelectedQuery() {
     });
 
     executeButton.dispatchEvent(clickEvent);
-    console.log("Re-Redash: Execute button clicked successfully");
+    customLogger.log("Re-Redash: Execute button clicked successfully");
     return true;
   } else {
-    console.warn(
+    customLogger.warn(
       "Re-Redash: Execute button with data-test='ExecuteButton' not found"
     );
 
@@ -1783,13 +1821,15 @@ function executeSelectedQuery() {
     for (const selector of fallbackSelectors) {
       const button = document.querySelector(selector);
       if (button) {
-        console.log(`Re-Redash: Found fallback execute button: ${selector}`);
+        customLogger.log(
+          `Re-Redash: Found fallback execute button: ${selector}`
+        );
         button.click();
         return true;
       }
     }
 
-    console.warn("Re-Redash: No execute button found with any selector");
+    customLogger.warn("Re-Redash: No execute button found with any selector");
     return false;
   }
 }
@@ -1815,7 +1855,7 @@ function executeCell(index) {
   renderCells();
 
   // Use the search and execute functionality to find and execute the cell content
-  console.log(
+  customLogger.log(
     `Re-Redash: Executing cell ${index} with content: "${cell.content}"`
   );
 
@@ -1828,7 +1868,7 @@ function executeCell(index) {
 
   // If search didn't find the content, fallback to the original method
   if (!searchResult) {
-    console.log(
+    customLogger.log(
       "Re-Redash: Cell content not found in main editor, using fallback execution"
     );
     executeQuery(cell.content);
@@ -1902,7 +1942,7 @@ function syncCellsToAceEditor() {
         try {
           return notebookState.cellEditors[index].getValue().trim();
         } catch (error) {
-          console.warn(
+          customLogger.warn(
             `Re-Redash: Failed to get content from cell editor ${index}:`,
             error
           );
@@ -1927,14 +1967,14 @@ function syncCellsToAceEditor() {
       // Use setValue with cursor position 1 to move cursor to end
       notebookState.aceEditor.setValue(fullContent, 1);
 
-      console.log(
+      customLogger.log(
         "Re-Redash: Synced",
         notebookState.cells.length,
         "cells to Ace editor"
       );
     }
   } catch (error) {
-    console.warn("Re-Redash: Failed to sync cells to Ace editor:", error);
+    customLogger.warn("Re-Redash: Failed to sync cells to Ace editor:", error);
   }
 }
 
@@ -1959,9 +1999,9 @@ function getNotebookState() {
  * Debug function to help troubleshoot editor detection issues
  */
 function debugEditorDetection() {
-  console.log("=== Re-Redash Editor Detection Debug ===");
-  console.log("window.ace:", !!window.ace);
-  console.log("window.editor:", !!window.editor);
+  customLogger.log("=== Re-Redash Editor Detection Debug ===");
+  customLogger.log("window.ace:", !!window.ace);
+  customLogger.log("window.editor:", !!window.editor);
 
   const elements = {
     ".ace_editor": document.querySelector(".ace_editor"),
@@ -1972,16 +2012,16 @@ function debugEditorDetection() {
   };
 
   Object.entries(elements).forEach(([selector, element]) => {
-    console.log(`${selector}:`, !!element, element);
+    customLogger.log(`${selector}:`, !!element, element);
   });
 
-  console.log("Current notebookState:", notebookState);
+  customLogger.log("Current notebookState:", notebookState);
 
   // Try to re-detect editor
-  console.log("Attempting editor re-detection...");
+  customLogger.log("Attempting editor re-detection...");
   const found = findAceEditor();
-  console.log("Re-detection result:", found);
-  console.log("=====================================");
+  customLogger.log("Re-detection result:", found);
+  customLogger.log("=====================================");
 
   return {
     windowAce: !!window.ace,

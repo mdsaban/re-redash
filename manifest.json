@@ -22,7 +22,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["inject.js", "notebook.js", "notebook.css", "completion-handler.js", "table-column-visibility.js", "table-column-visibility.css"],
+      "resources": ["logger.js", "inject.js", "notebook.js", "notebook.css", "completion-handler.js", "table-column-visibility.js", "table-column-visibility.css"],
       "matches": [
         "<all_urls>"
       ]

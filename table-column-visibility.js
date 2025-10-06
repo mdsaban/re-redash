@@ -33,7 +33,7 @@ let columnVisibilityState = {
  */
 function saveHiddenColumnsState() {
   // Disabled - no longer saving to localStorage
-  console.log(
+  customLogger.log(
     "Re-Redash: Column state persistence disabled - columns will reset on reload"
   );
 }
@@ -45,7 +45,9 @@ function saveHiddenColumnsState() {
 function loadHiddenColumnsState() {
   // Disabled - always start with empty hidden columns set
   columnVisibilityState.hiddenColumns = new Set();
-  console.log("Re-Redash: Starting with all columns visible - no persistence");
+  customLogger.log(
+    "Re-Redash: Starting with all columns visible - no persistence"
+  );
 }
 
 /**
@@ -187,7 +189,7 @@ function toggleColumnVisibility(columnId, table) {
   updateEyeIcon(columnId, isCurrentlyHidden);
 
   // No longer saving state - columns will reset on reload/new query
-  console.log(
+  customLogger.log(
     `Re-Redash: Toggled column ${columnId} - ${
       isCurrentlyHidden ? "shown" : "hidden"
     } (temporary - will reset on reload)`
@@ -356,7 +358,7 @@ function addEyeIconsToTable(table) {
     return;
   }
 
-  console.log(
+  customLogger.log(
     `Re-Redash: Found ${sortableColumns.length} sortable columns to add eye icons`
   );
 
@@ -411,7 +413,7 @@ function processAllTables() {
   });
 
   if (processedCount > 0) {
-    console.log(
+    customLogger.log(
       `Re-Redash: Processed ${processedCount} tables with column visibility toggles`
     );
   }
@@ -462,11 +464,11 @@ function handleMutations(mutations) {
  */
 function initializeColumnVisibility() {
   if (columnVisibilityState.isInitialized) {
-    console.log("Re-Redash: Column visibility already initialized");
+    customLogger.log("Re-Redash: Column visibility already initialized");
     return;
   }
 
-  console.log("Re-Redash: Initializing table column visibility...");
+  customLogger.log("Re-Redash: Initializing table column visibility...");
 
   // Always start with all columns visible (no persistence)
   loadHiddenColumnsState();
@@ -482,7 +484,9 @@ function initializeColumnVisibility() {
   });
 
   columnVisibilityState.isInitialized = true;
-  console.log("Re-Redash: Table column visibility initialized successfully");
+  customLogger.log(
+    "Re-Redash: Table column visibility initialized successfully"
+  );
 }
 
 /**
@@ -515,7 +519,7 @@ function destroyColumnVisibility() {
   columnVisibilityState.hiddenColumns.clear();
   columnVisibilityState.isInitialized = false;
 
-  console.log("Re-Redash: Table column visibility destroyed");
+  customLogger.log("Re-Redash: Table column visibility destroyed");
 }
 
 // Auto-initialize when DOM is ready
@@ -550,4 +554,4 @@ window.ReRedashColumnVisibility = {
   },
 };
 
-console.log("Re-Redash: Table column visibility module loaded");
+customLogger.log("Re-Redash: Table column visibility module loaded");

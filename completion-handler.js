@@ -27,7 +27,7 @@ function loadCachedCompletions() {
       ) {
         // 1 hour cache
         completionData = { ...completionData, ...parsedData.data };
-        console.log(
+        customLogger.log(
           "Re-Redash: Loaded cached completions:",
           completionData.allCompletions.length
         );
@@ -35,7 +35,7 @@ function loadCachedCompletions() {
       }
     }
   } catch (error) {
-    console.warn("Re-Redash: Failed to load cached completions:", error);
+    customLogger.warn("Re-Redash: Failed to load cached completions:", error);
   }
   return false;
 }
@@ -55,9 +55,9 @@ function saveCompletionsToCache() {
       },
     };
     localStorage.setItem("re-redash-completions", JSON.stringify(cacheData));
-    console.log("Re-Redash: Saved completions to cache");
+    customLogger.log("Re-Redash: Saved completions to cache");
   } catch (error) {
-    console.warn("Re-Redash: Failed to save completions to cache:", error);
+    customLogger.warn("Re-Redash: Failed to save completions to cache:", error);
   }
 }
 
@@ -71,7 +71,7 @@ function findMainAceEditor() {
     if (aceElement && aceElement.env && aceElement.env.editor) {
       const editor = aceElement.env.editor;
       if (editor.completers && editor.completers.length > 0) {
-        console.log("Re-Redash: Found editor via #ace-editor.env.editor");
+        customLogger.log("Re-Redash: Found editor via #ace-editor.env.editor");
         return editor;
       }
     }
@@ -82,7 +82,9 @@ function findMainAceEditor() {
       if (element.env && element.env.editor) {
         const editor = element.env.editor;
         if (editor.completers && editor.completers.length > 0) {
-          console.log("Re-Redash: Found editor via .ace_editor.env.editor");
+          customLogger.log(
+            "Re-Redash: Found editor via .ace_editor.env.editor"
+          );
           return editor;
         }
       }
@@ -97,13 +99,13 @@ function findMainAceEditor() {
           try {
             const editor = window.ace.edit(element);
             if (editor && editor.completers) {
-              console.log(
+              customLogger.log(
                 `Re-Redash: Found editor via window.ace.edit(${selector})`
               );
               return editor;
             }
           } catch (error) {
-            console.warn("Re-Redash: Failed to access ace editor:", error);
+            customLogger.warn("Re-Redash: Failed to access ace editor:", error);
           }
         }
       }
@@ -118,12 +120,12 @@ function findMainAceEditor() {
     ];
     for (const name of globalEditorNames) {
       if (window[name] && typeof window[name].getValue === "function") {
-        console.log(`Re-Redash: Found editor via window.${name}`);
+        customLogger.log(`Re-Redash: Found editor via window.${name}`);
         return window[name];
       }
     }
   } catch (error) {
-    console.error("Re-Redash: Error finding main ace editor:", error);
+    customLogger.error("Re-Redash: Error finding main ace editor:", error);
   }
 
   return null;
@@ -133,30 +135,32 @@ function findMainAceEditor() {
  * Fetch completions from the main Ace Editor
  */
 function fetchCompletions() {
-  console.log("Re-Redash: Attempting to fetch completions...");
+  customLogger.log("Re-Redash: Attempting to fetch completions...");
 
   // Find the main Ace Editor
   const aceEditor = findMainAceEditor();
   if (!aceEditor) {
-    console.warn("Re-Redash: No Ace Editor found");
+    customLogger.warn("Re-Redash: No Ace Editor found");
     return false;
   }
 
   if (!aceEditor.completers || aceEditor.completers.length === 0) {
-    console.warn("Re-Redash: No completers found in main editor");
+    customLogger.warn("Re-Redash: No completers found in main editor");
     return false;
   }
 
-  console.log(`Re-Redash: Found ${aceEditor.completers.length} completers`);
+  customLogger.log(
+    `Re-Redash: Found ${aceEditor.completers.length} completers`
+  );
 
   // Store original completers for persistence
   completionData.originalCompleters = aceEditor.completers.slice(); // Create a copy
-  console.log(
+  customLogger.log(
     "Re-Redash: Stored original completers:",
     completionData.originalCompleters.length,
     "completers"
   );
-  console.log(
+  customLogger.log(
     "Re-Redash: Original completers details:",
     completionData.originalCompleters.map(
       (c) => c.constructor.name || "Unknown"
@@ -186,7 +190,7 @@ function fetchCompletions() {
   Promise.all(promises)
     .then((resultsArrays) => {
       let allCompletions = resultsArrays.flat();
-      console.log(
+      customLogger.log(
         `Re-Redash: Fetched ${allCompletions.length} total completions`
       );
 
@@ -198,7 +202,7 @@ function fetchCompletions() {
         saveCompletionsToCache();
 
         // Log sample completions
-        console.log("Re-Redash: handler completions:", allCompletions);
+        customLogger.log("Re-Redash: handler completions:", allCompletions);
 
         // Trigger event for notebook cells to update
         window.dispatchEvent(
@@ -209,7 +213,7 @@ function fetchCompletions() {
       }
     })
     .catch((error) => {
-      console.error("Re-Redash: Error fetching completions:", error);
+      customLogger.error("Re-Redash: Error fetching completions:", error);
     });
 
   return true;
@@ -257,7 +261,7 @@ function processCompletions(allCompletions) {
   completionData.functions = Array.from(functions);
   completionData.allCompletions = allCompletions;
 
-  console.log("Re-Redash: Processed completions:", {
+  customLogger.log("Re-Redash: Processed completions:", {
     tables: completionData.tables.length,
     columns: Object.keys(completionData.columns).length,
     keywords: completionData.keywords.length,
@@ -301,7 +305,7 @@ function getSchemaSuggestions() {
  * Initialize completion fetching on page load
  */
 function initCompletionHandler() {
-  console.log("Re-Redash: Initializing completion handler...");
+  customLogger.log("Re-Redash: Initializing completion handler...");
 
   // First try to load cached completions
   if (loadCachedCompletions()) {
@@ -323,17 +327,19 @@ function initCompletionHandler() {
 
     function tryFetch() {
       attempts++;
-      console.log(`###Re-Redash: Fetch attempt ${attempts}/${maxAttempts}`);
+      customLogger.log(
+        `###Re-Redash: Fetch attempt ${attempts}/${maxAttempts}`
+      );
 
       if (fetchCompletions()) {
-        console.log("###Re-Redash: Completions fetched successfully");
+        customLogger.log("###Re-Redash: Completions fetched successfully");
         return;
       }
 
       if (attempts < maxAttempts) {
         setTimeout(tryFetch, 1000); // Wait 1 second between attempts
       } else {
-        console.warn(
+        customLogger.warn(
           "Re-Redash: Failed to fetch completions after maximum attempts"
         );
         // Even if fetching fails, make cached completions available
@@ -373,7 +379,7 @@ function getCurrentDataSource() {
     );
     return dataSourceElement ? dataSourceElement.innerText.trim() : null;
   } catch (error) {
-    console.warn("Re-Redash: Error getting current data source:", error);
+    customLogger.warn("Re-Redash: Error getting current data source:", error);
     return null;
   }
 }
@@ -382,7 +388,7 @@ function getCurrentDataSource() {
  * Handle data source change
  */
 function handleDataSourceChange(newDataSource) {
-  console.log("Re-Redash: Data source changed:", {
+  customLogger.log("Re-Redash: Data source changed:", {
     from: dataSourceMonitoring.currentDataSource,
     to: newDataSource,
   });
@@ -398,11 +404,11 @@ function handleDataSourceChange(newDataSource) {
   // Clear cached completions since schema will be different
   try {
     localStorage.removeItem("re-redash-completions");
-    console.log(
+    customLogger.log(
       "Re-Redash: Cleared cached completions due to data source change"
     );
   } catch (error) {
-    console.warn("Re-Redash: Failed to clear cached completions:", error);
+    customLogger.warn("Re-Redash: Failed to clear cached completions:", error);
   }
 
   // Reset completion data
@@ -418,7 +424,7 @@ function handleDataSourceChange(newDataSource) {
 
   // Refresh completions after a 1-second delay to allow database switch to complete
   dataSourceMonitoring.refreshTimeout = setTimeout(() => {
-    console.log(
+    customLogger.log(
       "Re-Redash: Refreshing completions after data source change..."
     );
 
@@ -442,14 +448,14 @@ function handleDataSourceChange(newDataSource) {
  */
 function startDataSourceMonitoring() {
   if (dataSourceMonitoring.isEnabled) {
-    console.log("Re-Redash: Data source monitoring already enabled");
+    customLogger.log("Re-Redash: Data source monitoring already enabled");
     return;
   }
 
   try {
     // Get initial data source
     dataSourceMonitoring.currentDataSource = getCurrentDataSource();
-    console.log(
+    customLogger.log(
       "Re-Redash: Initial data source:",
       dataSourceMonitoring.currentDataSource
     );
@@ -484,15 +490,20 @@ function startDataSourceMonitoring() {
       });
 
       dataSourceMonitoring.isEnabled = true;
-      console.log("Re-Redash: Data source monitoring started successfully");
+      customLogger.log(
+        "Re-Redash: Data source monitoring started successfully"
+      );
     } else {
-      console.warn(
+      customLogger.warn(
         "Re-Redash: Data source selector not found, retrying in 2 seconds..."
       );
       setTimeout(startDataSourceMonitoring, 2000);
     }
   } catch (error) {
-    console.error("Re-Redash: Error starting data source monitoring:", error);
+    customLogger.error(
+      "Re-Redash: Error starting data source monitoring:",
+      error
+    );
   }
 }
 
@@ -511,7 +522,7 @@ function stopDataSourceMonitoring() {
   }
 
   dataSourceMonitoring.isEnabled = false;
-  console.log("Re-Redash: Data source monitoring stopped");
+  customLogger.log("Re-Redash: Data source monitoring stopped");
 }
 
 // Auto-initialize when script loads
@@ -537,32 +548,32 @@ window.CompletionHandler = {
   isDataSourceMonitoringEnabled: () => dataSourceMonitoring.isEnabled,
   // Method to restore completers to any ace editor
   restoreCompletersTo: (editor) => {
-    console.log("Re-Redash: Attempting to restore completers...");
-    console.log(
+    customLogger.log("Re-Redash: Attempting to restore completers...");
+    customLogger.log(
       "Re-Redash: Original completers available:",
       !!completionData.originalCompleters
     );
-    console.log("Re-Redash: Editor provided:", !!editor);
+    customLogger.log("Re-Redash: Editor provided:", !!editor);
 
     if (completionData.originalCompleters && editor) {
-      console.log(
+      customLogger.log(
         "Re-Redash: Restoring",
         completionData.originalCompleters.length,
         "completers"
       );
       editor.completers = completionData.originalCompleters.slice(); // Create a copy
-      console.log(
+      customLogger.log(
         "Re-Redash: Editor now has",
         editor.completers.length,
         "completers"
       );
-      console.log(
+      customLogger.log(
         "Re-Redash: Restored completers:",
         editor.completers.map((c) => c.constructor.name || "Unknown")
       );
       return true;
     }
-    console.log(
+    customLogger.log(
       "Re-Redash: Failed to restore completers - missing data or editor"
     );
     return false;

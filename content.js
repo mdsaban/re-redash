@@ -4,6 +4,20 @@
  * and communicates with it through custom events
  */
 
+// Custom logger for content script (runs in different context than page)
+const customLogger = (function () {
+  const ENABLE_LOGS = false; // Set to false to disable logs
+  const PREFIX = "Re-Redash:";
+
+  return {
+    log: (...args) => ENABLE_LOGS && console.log(PREFIX, ...args),
+    warn: (...args) => ENABLE_LOGS && console.warn(PREFIX, ...args),
+    error: (...args) => ENABLE_LOGS && console.error(PREFIX, ...args),
+    info: (...args) => ENABLE_LOGS && console.info(PREFIX, ...args),
+    debug: (...args) => ENABLE_LOGS && console.debug(PREFIX, ...args),
+  };
+})();
+
 // Global state for communication with injected script
 let isInjectedScriptSetup = false;
 
@@ -17,10 +31,10 @@ function injectStyles() {
     notebookLink.rel = "stylesheet";
     notebookLink.href = chrome.runtime.getURL("notebook.css");
     notebookLink.onload = function () {
-      console.log("Re-Redash: Notebook styles loaded successfully");
+      customLogger.log("Re-Redash: Notebook styles loaded successfully");
     };
     notebookLink.onerror = function () {
-      console.error("Re-Redash: Failed to load notebook styles");
+      customLogger.error("Re-Redash: Failed to load notebook styles");
     };
 
     (document.head || document.documentElement).appendChild(notebookLink);
@@ -32,19 +46,21 @@ function injectStyles() {
       "table-column-visibility.css"
     );
     columnVisibilityLink.onload = function () {
-      console.log(
+      customLogger.log(
         "Re-Redash: Table column visibility styles loaded successfully"
       );
     };
     columnVisibilityLink.onerror = function () {
-      console.error("Re-Redash: Failed to load table column visibility styles");
+      customLogger.error(
+        "Re-Redash: Failed to load table column visibility styles"
+      );
     };
 
     (document.head || document.documentElement).appendChild(
       columnVisibilityLink
     );
   } catch (error) {
-    console.error("Re-Redash: Error injecting styles:", error);
+    customLogger.error("Re-Redash: Error injecting styles:", error);
   }
 }
 
@@ -57,18 +73,18 @@ function injectNotebookScript() {
     script.src = chrome.runtime.getURL("notebook.js");
     script.onload = function () {
       this.remove();
-      console.log("Re-Redash: Notebook script loaded successfully");
+      customLogger.log("Re-Redash: Notebook script loaded successfully");
 
       // Now load the table column visibility script
       injectTableColumnVisibilityScript();
     };
     script.onerror = function () {
-      console.error("Re-Redash: Failed to load notebook script");
+      customLogger.error("Re-Redash: Failed to load notebook script");
     };
 
     (document.head || document.documentElement).appendChild(script);
   } catch (error) {
-    console.error("Re-Redash: Error injecting notebook script:", error);
+    customLogger.error("Re-Redash: Error injecting notebook script:", error);
   }
 }
 
@@ -81,7 +97,7 @@ function injectTableColumnVisibilityScript() {
     script.src = chrome.runtime.getURL("table-column-visibility.js");
     script.onload = function () {
       this.remove();
-      console.log(
+      customLogger.log(
         "Re-Redash: Table column visibility script loaded successfully"
       );
 
@@ -89,12 +105,14 @@ function injectTableColumnVisibilityScript() {
       loadCompletionHandler();
     };
     script.onerror = function () {
-      console.error("Re-Redash: Failed to load table column visibility script");
+      customLogger.error(
+        "Re-Redash: Failed to load table column visibility script"
+      );
     };
 
     (document.head || document.documentElement).appendChild(script);
   } catch (error) {
-    console.error(
+    customLogger.error(
       "Re-Redash: Error injecting table column visibility script:",
       error
     );
@@ -115,10 +133,35 @@ function loadCompletionHandler() {
       })
     );
 
-    console.log("Re-Redash: Requested completion handler loading");
+    customLogger.log("Re-Redash: Requested completion handler loading");
   } catch (error) {
-    console.error("Re-Redash: Error loading completion handler:", error);
+    customLogger.error("Re-Redash: Error loading completion handler:", error);
   }
+}
+
+/**
+ * Inject the logger script into the page context
+ */
+function injectLogger() {
+  return new Promise((resolve, reject) => {
+    try {
+      const script = document.createElement("script");
+      script.src = chrome.runtime.getURL("logger.js");
+      script.onload = function () {
+        this.remove();
+        customLogger.log("Logger script loaded successfully");
+        resolve();
+      };
+      script.onerror = function () {
+        customLogger.error("Failed to load logger script");
+        reject(new Error("Failed to load logger script"));
+      };
+      (document.head || document.documentElement).appendChild(script);
+    } catch (error) {
+      customLogger.error("Error injecting logger script:", error);
+      reject(error);
+    }
+  });
 }
 
 /**
@@ -129,25 +172,31 @@ function injectScript() {
     // Inject styles first
     injectStyles();
 
-    // Create and inject the main script
-    const script = document.createElement("script");
-    script.src = chrome.runtime.getURL("inject.js");
-    script.onload = function () {
-      // Remove the script element after loading
-      this.remove();
-      console.log("Re-Redash: Injected script loaded successfully");
+    // Inject logger first, then the main script
+    injectLogger()
+      .then(() => {
+        const script = document.createElement("script");
+        script.src = chrome.runtime.getURL("inject.js");
+        script.onload = function () {
+          // Remove the script element after loading
+          this.remove();
+          customLogger.log("Re-Redash: Injected script loaded successfully");
 
-      // Now inject the notebook script
-      injectNotebookScript();
-    };
-    script.onerror = function () {
-      console.error("Re-Redash: Failed to load injected script");
-    };
+          // Now inject the notebook script
+          injectNotebookScript();
+        };
+        script.onerror = function () {
+          customLogger.error("Re-Redash: Failed to load injected script");
+        };
 
-    // Inject into the page
-    (document.head || document.documentElement).appendChild(script);
+        // Inject into the page
+        (document.head || document.documentElement).appendChild(script);
+      })
+      .catch((error) => {
+        customLogger.error("Re-Redash: Error loading logger:", error);
+      });
   } catch (error) {
-    console.error("Re-Redash: Error injecting script:", error);
+    customLogger.error("Re-Redash: Error injecting script:", error);
   }
 }
 
@@ -164,7 +213,7 @@ function sendMessageToInjectedScript(action, data = null) {
       })
     );
   } catch (error) {
-    console.error(
+    customLogger.error(
       "Re-Redash: Error sending message to injected script:",
       error
     );
@@ -179,17 +228,19 @@ function setupEventListeners() {
   window.addEventListener("reRedashSetupComplete", function (event) {
     const { success, error } = event.detail;
     if (success) {
-      console.log("Re-Redash: Injected script setup completed successfully");
+      customLogger.log(
+        "Re-Redash: Injected script setup completed successfully"
+      );
       isInjectedScriptSetup = true;
     } else {
-      console.error("Re-Redash: Injected script setup failed:", error);
+      customLogger.error("Re-Redash: Injected script setup failed:", error);
     }
   });
 
   // Listen for responses from injected script
   window.addEventListener("reRedashResponse", function (event) {
     const { action, data } = event.detail;
-    console.log(
+    customLogger.log(
       "Re-Redash: Received response from injected script:",
       action,
       data
@@ -197,7 +248,7 @@ function setupEventListeners() {
     // Handle responses if needed
   });
 
-  console.log(
+  customLogger.log(
     "Re-Redash: Event listeners set up for injected script communication"
   );
 }
@@ -206,7 +257,7 @@ function setupEventListeners() {
  * Initialize the content script
  */
 function initializeContentScript() {
-  console.log("Re-Redash: Content script initialized");
+  customLogger.log("Re-Redash: Content script initialized");
 
   // Set up event listeners first
   setupEventListeners();
@@ -227,7 +278,7 @@ window.reRedashContentScript = {
     if (isInjectedScriptSetup) {
       sendMessageToInjectedScript("reinitialize");
     } else {
-      console.warn("Re-Redash: Injected script not set up yet");
+      customLogger.warn("Re-Redash: Injected script not set up yet");
     }
   },
 };

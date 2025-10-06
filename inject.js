@@ -29,14 +29,17 @@
     try {
       if (query && query.trim()) {
         localStorage.setItem(CONFIG.STORAGE_KEY, query.trim());
-        console.log("Re-Redash: Query saved to localStorage");
+        customLogger.log("Re-Redash: Query saved to localStorage");
       } else {
         // Remove from localStorage if query is empty
         localStorage.removeItem(CONFIG.STORAGE_KEY);
-        console.log("Re-Redash: Empty query - removed from localStorage");
+        customLogger.log("Re-Redash: Empty query - removed from localStorage");
       }
     } catch (error) {
-      console.error("Re-Redash: Error saving query to localStorage:", error);
+      customLogger.error(
+        "Re-Redash: Error saving query to localStorage:",
+        error
+      );
     }
   }
 
@@ -59,7 +62,7 @@
     try {
       return localStorage.getItem(CONFIG.STORAGE_KEY);
     } catch (error) {
-      console.error("Re-Redash: Error getting saved query:", error);
+      customLogger.error("Re-Redash: Error getting saved query:", error);
       return null;
     }
   }
@@ -70,9 +73,9 @@
   function clearSavedQuery() {
     try {
       localStorage.removeItem(CONFIG.STORAGE_KEY);
-      console.log("Re-Redash: Saved query cleared");
+      customLogger.log("Re-Redash: Saved query cleared");
     } catch (error) {
-      console.error("Re-Redash: Error clearing saved query:", error);
+      customLogger.error("Re-Redash: Error clearing saved query:", error);
     }
   }
 
@@ -83,7 +86,7 @@
   function restoreSavedQuery(forceRestore = false) {
     try {
       if (!aceEditor) {
-        console.warn("Re-Redash: Ace editor not available for restore");
+        customLogger.warn("Re-Redash: Ace editor not available for restore");
         return;
       }
 
@@ -94,11 +97,11 @@
         // Only restore if editor is empty or force restore is requested
         if (forceRestore || !currentValue.trim()) {
           aceEditor.setValue(savedQuery, 1); // 1 moves cursor to end
-          console.log("Re-Redash: Restored saved query to Ace editor");
+          customLogger.log("Re-Redash: Restored saved query to Ace editor");
         }
       }
     } catch (error) {
-      console.error("Re-Redash: Error restoring saved query:", error);
+      customLogger.error("Re-Redash: Error restoring saved query:", error);
     }
   }
 
@@ -135,9 +138,9 @@
       });
 
       isListenerAttached = true;
-      console.log("Re-Redash: Event listeners attached to Ace editor");
+      customLogger.log("Re-Redash: Event listeners attached to Ace editor");
     } catch (error) {
-      console.error(
+      customLogger.error(
         "Re-Redash: Error attaching event listeners to Ace editor:",
         error
       );
@@ -151,19 +154,19 @@
     try {
       // Check if ace is available in the page context
       if (!window.ace) {
-        console.log("Re-Redash: window.ace not available yet");
+        customLogger.log("Re-Redash: window.ace not available yet");
         return false;
       }
 
       // Try to get editor by ID first
-      console.log(
+      customLogger.log(
         "Re-Redash: Finding Ace editor...",
         !!document.getElementById(CONFIG.ACE_EDITOR_ID)
       );
 
       if (document.getElementById(CONFIG.ACE_EDITOR_ID)) {
         aceEditor = window.ace.edit(CONFIG.ACE_EDITOR_ID);
-        console.log("Re-Redash: Found Ace editor by ID");
+        customLogger.log("Re-Redash: Found Ace editor by ID");
         return true;
       }
 
@@ -172,7 +175,7 @@
         const editorElement = document.querySelector(".ace_editor");
         if (editorElement) {
           aceEditor = window.ace.edit(editorElement);
-          console.log("Re-Redash: Found Ace editor by element");
+          customLogger.log("Re-Redash: Found Ace editor by element");
           return true;
         }
       }
@@ -180,13 +183,13 @@
       // Try to find editor in global scope
       if (window.editor && typeof window.editor.getValue === "function") {
         aceEditor = window.editor;
-        console.log("Re-Redash: Found Ace editor in window.editor");
+        customLogger.log("Re-Redash: Found Ace editor in window.editor");
         return true;
       }
 
       return false;
     } catch (error) {
-      console.error("Re-Redash: Error finding Ace editor:", error);
+      customLogger.error("Re-Redash: Error finding Ace editor:", error);
       return false;
     }
   }
@@ -201,7 +204,7 @@
         // Successfully found the editor
         attachAceEditorListeners();
         restoreSavedQuery();
-        console.log("Re-Redash: Query saver setup complete");
+        customLogger.log("Re-Redash: Query saver setup complete");
 
         // Dispatch custom event to notify content script that setup is complete
         window.dispatchEvent(
@@ -211,7 +214,7 @@
         );
       } else if (retryCount < CONFIG.MAX_RETRIES) {
         // Retry after delay
-        console.log(
+        customLogger.log(
           `Re-Redash: Ace editor not found, retrying... (${retryCount + 1}/${
             CONFIG.MAX_RETRIES
           })`
@@ -220,7 +223,7 @@
           setupQuerySaver(retryCount + 1);
         }, CONFIG.RETRY_DELAY);
       } else {
-        console.warn(
+        customLogger.warn(
           "Re-Redash: Max retries reached, could not find Ace editor"
         );
 
@@ -232,7 +235,7 @@
         );
       }
     } catch (error) {
-      console.error("Re-Redash: Error setting up query saver:", error);
+      customLogger.error("Re-Redash: Error setting up query saver:", error);
 
       // Dispatch custom event to notify content script of error
       window.dispatchEvent(
@@ -247,7 +250,7 @@
    * Initialize the query saver functionality
    */
   function initializeQuerySaver() {
-    console.log("Re-Redash: Injected script initialized");
+    customLogger.log("Re-Redash: Injected script initialized");
 
     // Wait for DOM to be ready and setup
     if (document.readyState === "loading") {
@@ -288,7 +291,7 @@
         break;
 
       default:
-        console.warn("Re-Redash: Unknown action:", action);
+        customLogger.warn("Re-Redash: Unknown action:", action);
     }
   });
 
@@ -310,11 +313,14 @@
     const script = document.createElement("script");
     script.src = event.detail.url;
     script.onload = function () {
-      console.log("Re-Redash: Completion handler loaded");
+      customLogger.log("Re-Redash: Completion handler loaded");
       window.dispatchEvent(new CustomEvent("completionHandlerLoaded"));
     };
     script.onerror = function (error) {
-      console.error("Re-Redash: Failed to load completion handler:", error);
+      customLogger.error(
+        "Re-Redash: Failed to load completion handler:",
+        error
+      );
     };
     (document.head || document.documentElement).appendChild(script);
   });
