@@ -24,6 +24,7 @@ let notebookState = {
   originalContainer: null,
   config: DEFAULT_CONFIG,
   cellEditors: {}, // Store individual Ace Editor instances for each cell
+  lastFocusedCellIndex: null, // Track the last focused cell for schema list insertions
 };
 
 /**
@@ -453,6 +454,80 @@ function injectNotebookButton() {
   }
 }
 
+function handleSchemaListCopyClick(e) {
+  const copyButton = e.target.closest(".schema-list-item .copy-to-editor");
+
+  if (!copyButton) return;
+
+  // Prevent default action
+  e.preventDefault();
+  e.stopPropagation();
+
+  const schemaListItem = copyButton.closest(".schema-list-item");
+  if (!schemaListItem) {
+    customLogger.warn("Re-Redash: Could not find schema-list-item parent");
+    return;
+  }
+
+  const tableNameElement = schemaListItem.querySelector(".table-name strong");
+  if (!tableNameElement) {
+    customLogger.warn("Re-Redash: Could not find table name element");
+    return;
+  }
+
+  const tableName = tableNameElement.textContent.trim();
+  if (!tableName) {
+    customLogger.warn("Re-Redash: Table name is empty");
+    return;
+  }
+
+  customLogger.log(`Re-Redash: Copying table name to editor: ${tableName}`);
+
+  insertTableNameIntoActiveCell(tableName);
+}
+
+function insertTableNameIntoActiveCell(tableName) {
+  if (!notebookState.isNotebookMode) {
+    return;
+  }
+
+  let targetCellIndex = notebookState.lastFocusedCellIndex;
+
+  if (
+    targetCellIndex === null ||
+    targetCellIndex < 0 ||
+    targetCellIndex >= notebookState.cells.length
+  ) {
+    customLogger.log("Re-Redash: No valid last focused cell, using first cell");
+    targetCellIndex = 0;
+  }
+
+  if (notebookState.cells.length > 0) {
+    customLogger.log(
+      `Re-Redash: Inserting into last focused cell: ${targetCellIndex}`
+    );
+    insertIntoCell(targetCellIndex, tableName);
+  }
+}
+
+function insertIntoCell(cellIndex, text) {
+  if (cellIndex < 0 || cellIndex >= notebookState.cells.length) {
+    customLogger.warn(`Re-Redash: Invalid cell index: ${cellIndex}`);
+    return;
+  }
+
+  if (notebookState.cellEditors && notebookState.cellEditors[cellIndex]) {
+    try {
+      const cellEditor = notebookState.cellEditors[cellIndex];
+      cellEditor.insert(text);
+      cellEditor.focus();
+      customLogger.log(`Re-Redash: Inserted "${text}" into cell ${cellIndex}`);
+    } catch (error) {
+      customLogger.warn(`Re-Redash: Failed to insert into Ace editor:`, error);
+    }
+  }
+}
+
 /**
  * Setup event listeners for notebook functionality
  */
@@ -466,6 +541,9 @@ function setupEventListeners() {
 
   // Listen for completion updates
   window.addEventListener("completionsLoaded", handleCompletionsLoaded);
+
+  // Listen for schema list copy-to-editor button clicks
+  document.addEventListener("click", handleSchemaListCopyClick);
 }
 
 /**
@@ -1637,6 +1715,10 @@ function updateCellFocusState(index) {
     targetCell.classList.add("cell-focused");
     customLogger.log(`Re-Redash: Updated focus state for cell ${index}`);
   }
+
+  // Save the last focused cell index for schema list insertions
+  notebookState.lastFocusedCellIndex = index;
+  customLogger.log(`Re-Redash: Saved last focused cell index: ${index}`);
 }
 
 /**
