@@ -25,7 +25,104 @@ let notebookState = {
   config: DEFAULT_CONFIG,
   cellEditors: {}, // Store individual Ace Editor instances for each cell
   lastFocusedCellIndex: null, // Track the last focused cell for schema list insertions
+  tooltipElement: null, // Store single tooltip element for reuse
+  tooltipTimeout: null, // Store timeout for showing tooltip
 };
+
+function getTooltipElement() {
+  if (!notebookState.tooltipElement) {
+    notebookState.tooltipElement = document.createElement("div");
+    notebookState.tooltipElement.className = "re-redash-tooltip";
+    document.body.appendChild(notebookState.tooltipElement);
+  }
+  return notebookState.tooltipElement;
+}
+
+function showTooltip(element, text, position = "top") {
+  const tooltip = getTooltipElement();
+
+  // Clear any existing timeout
+  if (notebookState.tooltipTimeout) {
+    clearTimeout(notebookState.tooltipTimeout);
+  }
+
+  // Set tooltip content and remove old position classes
+  tooltip.textContent = text;
+  tooltip.className = "re-redash-tooltip";
+  tooltip.classList.add(`tooltip-${position}`);
+
+  // Get element position
+  const rect = element.getBoundingClientRect();
+  const tooltipRect = tooltip.getBoundingClientRect();
+
+  // Calculate position based on specified direction
+  let top, left;
+
+  switch (position) {
+    case "bottom":
+      top = rect.bottom + window.scrollY + 8;
+      left =
+        rect.left + window.scrollX + rect.width / 2 - tooltipRect.width / 2;
+      break;
+    case "left":
+      top =
+        rect.top + window.scrollY + rect.height / 2 - tooltipRect.height / 2;
+      left = rect.left + window.scrollX - tooltipRect.width - 8;
+      break;
+    case "right":
+      top =
+        rect.top + window.scrollY + rect.height / 2 - tooltipRect.height / 2;
+      left = rect.right + window.scrollX + 8;
+      break;
+    case "top":
+    default:
+      top = rect.top + window.scrollY - tooltipRect.height - 8;
+      left =
+        rect.left + window.scrollX + rect.width / 2 - tooltipRect.width / 2;
+      break;
+  }
+
+  // Ensure tooltip stays within viewport
+  const maxLeft = window.innerWidth - tooltipRect.width - 10;
+  const maxTop = window.innerHeight + window.scrollY - tooltipRect.height - 10;
+
+  left = Math.max(10, Math.min(left, maxLeft));
+  top = Math.max(10, Math.min(top, maxTop));
+
+  tooltip.style.top = `${top}px`;
+  tooltip.style.left = `${left}px`;
+
+  // Show tooltip immediately (no delay)
+  tooltip.classList.add("show");
+}
+
+function hideTooltip() {
+  const tooltip = notebookState.tooltipElement;
+  if (tooltip) {
+    tooltip.classList.remove("show");
+  }
+
+  // Clear any pending timeout
+  if (notebookState.tooltipTimeout) {
+    clearTimeout(notebookState.tooltipTimeout);
+    notebookState.tooltipTimeout = null;
+  }
+}
+
+function addTooltip(element, text, position = "top") {
+  element.addEventListener("mouseenter", function () {
+    showTooltip(this, text, position);
+  });
+
+  element.addEventListener("mouseleave", function () {
+    hideTooltip();
+  });
+
+  // Hide tooltip when element is clicked
+  element.addEventListener("click", function () {
+    hideTooltip();
+  });
+}
 
 /**
  * Save notebook mode preference to localStorage
@@ -486,6 +583,158 @@ function handleSchemaListCopyClick(e) {
   insertTableNameIntoActiveCell(tableName);
 }
 
+function injectSearchIcons() {
+  const schemaItems = document.querySelectorAll(".schema-list-item");
+
+  schemaItems.forEach((item) => {
+    if (item.querySelector(".search-table-icon")) return;
+
+    const copyButton = item.querySelector(".copy-to-editor");
+    if (!copyButton) return;
+
+    const searchIcon = document.createElement("i");
+    searchIcon.className = "zmdi zmdi-search search-table-icon";
+    searchIcon.title = "Execute SELECT * FROM table LIMIT 100";
+    searchIcon.style.cssText = `
+      cursor: pointer;
+      margin-right: 8px;
+      color: #1890ff;
+      font-size: 14px;
+      transition: color 0.2s;
+      padding-top: 4px;
+    `;
+
+    // Add tooltip to search icon
+    addTooltip(
+      searchIcon,
+      `Quick query: SELECT * FROM ${item.innerText} LIMIT 100`,
+      "right"
+    );
+
+    searchIcon.addEventListener("mouseenter", function () {
+      this.style.color = "#40a9ff";
+    });
+
+    searchIcon.addEventListener("mouseleave", function () {
+      this.style.color = "#1890ff";
+    });
+
+    copyButton.parentNode.insertBefore(searchIcon, copyButton);
+  });
+}
+
+function handleSearchIconClick(e) {
+  // Check if the clicked element is a search icon
+  const searchIcon = e.target.closest(".search-table-icon");
+
+  if (!searchIcon) return;
+
+  // Prevent default action
+  e.preventDefault();
+  e.stopPropagation();
+
+  // Find the table name
+  const schemaListItem = searchIcon.closest(".schema-list-item");
+  if (!schemaListItem) {
+    customLogger.warn("Re-Redash: Could not find schema-list-item parent");
+    return;
+  }
+
+  const tableNameElement = schemaListItem.querySelector(".table-name strong");
+  if (!tableNameElement) {
+    customLogger.warn("Re-Redash: Could not find table name element");
+    return;
+  }
+
+  const tableName = tableNameElement.textContent.trim();
+  if (!tableName) {
+    customLogger.warn("Re-Redash: Table name is empty");
+    return;
+  }
+
+  customLogger.log(`Re-Redash: Search icon clicked for table: ${tableName}`);
+
+  // Create the SELECT query with LIMIT 100
+  const query = `SELECT * FROM ${tableName} LIMIT 100`;
+
+  customLogger.log(`Re-Redash: Executing query: ${query}`);
+
+  executeTableQuery(query);
+}
+
+function executeTableQuery(query) {
+  if (!notebookState.aceEditor) {
+    customLogger.log(
+      "Re-Redash: No ace editor found, attempting to find one..."
+    );
+    if (!findAceEditor()) {
+      customLogger.warn(
+        "Re-Redash: Cannot find ace editor for query execution"
+      );
+      alert(
+        "Cannot find the query editor. Please refresh the page and try again."
+      );
+      return;
+    }
+  }
+
+  try {
+    // If in notebook mode, create a new cell with the query
+    if (notebookState.isNotebookMode) {
+      // Add a new cell with the query
+      const newCellIndex = notebookState.cells.length;
+      notebookState.cells.push({
+        id: `cell_${Date.now()}_${newCellIndex}`,
+        content: query,
+      });
+
+      // Re-render cells to show the new cell
+      renderCells();
+
+      // Sync to ace editor
+      syncCellsToAceEditor();
+
+      // Focus on the new cell
+      setTimeout(() => {
+        focusCell(newCellIndex);
+      }, 100);
+
+      // Execute the newly created cell
+      setTimeout(() => {
+        executeCell(newCellIndex);
+      }, 300);
+    } else {
+      // In text mode, set the query in the editor and execute
+      const currentContent = notebookState.aceEditor.getValue().trim();
+
+      // If editor has content, append the query with a separator
+      if (currentContent) {
+        notebookState.aceEditor.setValue(currentContent + ";\n\n" + query, 1);
+      } else {
+        notebookState.aceEditor.setValue(query, 1);
+      }
+
+      // Wait a bit for the content to be set, then find and execute
+      setTimeout(() => {
+        const searchResult = findAndExecuteQuery(query, {
+          caseSensitive: false,
+          wholeWord: false,
+          regExp: false,
+        });
+
+        if (!searchResult) {
+          customLogger.warn("Re-Redash: Could not find and execute query");
+          // Just click the execute button as fallback
+          executeSelectedQuery();
+        }
+      }, 200);
+    }
+  } catch (error) {
+    customLogger.error("Re-Redash: Error executing table query:", error);
+    alert("Failed to execute query. Please try again.");
+  }
+}
+
 function insertTableNameIntoActiveCell(tableName) {
   if (!notebookState.isNotebookMode) {
     return;
@@ -544,6 +793,17 @@ function setupEventListeners() {
 
   // Listen for schema list copy-to-editor button clicks
   document.addEventListener("click", handleSchemaListCopyClick);
+
+  // Listen for search icon clicks to execute SELECT query
+  document.addEventListener("click", handleSearchIconClick);
+
+  // Inject search icons into schema list items
+  // Run initially and then periodically to handle dynamically loaded items
+  setTimeout(() => {
+    injectSearchIcons();
+    // Set up periodic injection to handle dynamic content
+    setInterval(injectSearchIcons, 2000); // Check every 2 seconds
+  }, 1000);
 }
 
 /**
@@ -1497,7 +1757,7 @@ function createCellElement(cell, index) {
       <div class="cell-editor-wrapper" data-cell-index="${index}"></div>
       <div class="cell-actions">
         <button class="cell-execute-btn" data-cell-index="${index}" title="Execute Cell (Shift+Enter)">
-          <span class="zmdi zmdi-play"></span> 
+          <span class="zmdi zmdi-play"></span>
         </button>
         <button class="cell-add-btn" data-cell-index="${index}" title="Add New Cell">
           <i class="zmdi zmdi-plus"></i>
@@ -1511,6 +1771,31 @@ function createCellElement(cell, index) {
       </div>
     </div>
   `;
+
+  // Add tooltips to cell action buttons after DOM insertion
+  setTimeout(() => {
+    const executeBtn = cellDiv.querySelector(".cell-execute-btn");
+    const addBtn = cellDiv.querySelector(".cell-add-btn");
+    const copyBtn = cellDiv.querySelector(".cell-copy-btn");
+    const deleteBtn = cellDiv.querySelector(".cell-delete-btn");
+
+    if (executeBtn) {
+      addTooltip(executeBtn, "Execute this cell (Shift+Enter)", "top");
+    }
+    if (addBtn) {
+      addTooltip(addBtn, "Add a new cell (Cmd + Shift + A)", "top");
+    }
+    if (copyBtn) {
+      addTooltip(copyBtn, "Duplicate cell (Cmd + Shift + D)", "top");
+    }
+    if (deleteBtn) {
+      addTooltip(
+        deleteBtn,
+        "Delete this cell (Cmd + Shift + Backspace)",
+        "top"
+      );
+    }
+  }, 0);
 
   // Create Ace Editor instance for this cell after DOM insertion
   setTimeout(() => {
@@ -1796,11 +2081,6 @@ function deleteCell(index) {
   }
 }
 
-/**
- * Find and execute a query by searching for specific text
- * @param {string} searchText - Text to search for in the editor
- * @param {Object} options - Search options
- */
 function findAndExecuteQuery(searchText = "SELECT", options = {}) {
   customLogger.log(`Re-Redash: Searching for text: "${searchText}"`);
 
@@ -2126,6 +2406,7 @@ window.reRedashNotebook = {
   findAndExecuteQuery: findAndExecuteQuery,
   executeSelectedQuery: executeSelectedQuery,
   findQuery: findAndExecuteQuery, // Alias for convenience
+  executeTableQuery: executeTableQuery, // Execute query for a table
 };
 
 // Auto-initialize when script loads

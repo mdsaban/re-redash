@@ -36,6 +36,16 @@
   background: black;
 }
 
+/* Search icon visibility - hidden by default, shown on parent hover */
+.search-table-icon {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.schema-list-item:hover .search-table-icon {
+  opacity: 1;
+}
+
 /* Notebook cells container */
 .notebook-cells {
   padding: 0;
@@ -290,6 +300,64 @@
 }
 
 /* Completion dropdown styles */
+/* Tooltip styles */
+.re-redash-tooltip {
+  position: absolute;
+  background: #24292f;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: nowrap;
+  z-index: 10001;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.re-redash-tooltip.show {
+  opacity: 1;
+}
+
+.re-redash-tooltip::before {
+  content: '';
+  position: absolute;
+  border: 5px solid transparent;
+}
+
+/* Tooltip arrow positions */
+.re-redash-tooltip.tooltip-top::before {
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-color: #24292f;
+}
+
+.re-redash-tooltip.tooltip-bottom::before {
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: #24292f;
+}
+
+.re-redash-tooltip.tooltip-left::before {
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left-color: #24292f;
+}
+
+.re-redash-tooltip.tooltip-right::before {
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right-color: #24292f;
+}
+
 .completion-dropdown {
   position: absolute;
   background: #fff;
