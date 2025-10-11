@@ -253,21 +253,55 @@ function setupEventListeners() {
   );
 }
 
-/**
- * Initialize the content script
- */
-function initializeContentScript() {
-  customLogger.log("Re-Redash: Content script initialized");
+function shouldInitializeExtension() {
+  const requiredSelectors = [
+    ".query-page-wrapper  .editor__left__data-source",
+    ".query-page-wrapper  .query-editor-controls-button",
+  ];
 
-  // Set up event listeners first
-  setupEventListeners();
+  const hasRequiredElements = requiredSelectors.some(
+    (selector) => document.querySelector(selector) !== null
+  );
 
-  // Inject the script into page context
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", injectScript);
-  } else {
-    injectScript();
+  if (!hasRequiredElements) {
+    customLogger.log(
+      "Re-Redash: Required elements not found, skipping initialization"
+    );
   }
+
+  return hasRequiredElements;
+}
+
+function waitForElementsAndInitialize(retryCount = 0, maxRetries = 20) {
+  if (shouldInitializeExtension()) {
+    customLogger.log("Re-Redash: Required elements found, initializing...");
+
+    setupEventListeners();
+
+    // Inject the script into page context
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", injectScript);
+    } else {
+      injectScript();
+    }
+  } else if (retryCount < maxRetries) {
+    customLogger.log(
+      `Re-Redash: Waiting for required elements... (${
+        retryCount + 1
+      }/${maxRetries})`
+    );
+    setTimeout(() => {
+      waitForElementsAndInitialize(retryCount + 1, maxRetries);
+    }, 500);
+  } else {
+    customLogger.log(
+      "Re-Redash: Required elements not found after maximum retries, extension will not initialize"
+    );
+  }
+}
+
+function initializeContentScript() {
+  waitForElementsAndInitialize();
 }
 
 // Expose utility functions for debugging/extension purposes
