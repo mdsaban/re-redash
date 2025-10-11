@@ -51,7 +51,22 @@ Automatically saves your queries as you type and restores them when you return t
 
 Click the eye icon (👁️) next to column headers to hide/show columns. Hidden columns appear collapsed with visual feedback.
 
+### 4. 🔍 Quick Search (Cmd+K)
+
+Press **Cmd+K** (Mac) or **Ctrl+K** (Windows/Linux) to open a quick search modal that allows you to:
+
+- Search for tables in your database with fuzzy matching
+- See autocomplete suggestions as you type
+- Navigate with arrow keys (↑/↓)
+- Press Enter to execute `SELECT * FROM table LIMIT 100`
+
 ## ⌨️ Keyboard Shortcuts
+
+### Quick Search
+
+- **Cmd/Ctrl + K**: Open/close quick search modal
+- **↑/↓**: Navigate through search results
+- **Enter**: Select table and execute query
 
 ### Notebook Mode
 

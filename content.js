@@ -59,6 +59,19 @@ function injectStyles() {
     (document.head || document.documentElement).appendChild(
       columnVisibilityLink
     );
+
+    // Inject quick search styles
+    const quickSearchLink = document.createElement("link");
+    quickSearchLink.rel = "stylesheet";
+    quickSearchLink.href = chrome.runtime.getURL("quick-search.css");
+    quickSearchLink.onload = function () {
+      customLogger.log("Re-Redash: Quick search styles loaded successfully");
+    };
+    quickSearchLink.onerror = function () {
+      customLogger.error("Re-Redash: Failed to load quick search styles");
+    };
+
+    (document.head || document.documentElement).appendChild(quickSearchLink);
   } catch (error) {
     customLogger.error("Re-Redash: Error injecting styles:", error);
   }
@@ -101,19 +114,52 @@ function injectTableColumnVisibilityScript() {
         "Re-Redash: Table column visibility script loaded successfully"
       );
 
-      // Now load the completion handler
+      // Load quick search and completion handler independently
+      // They don't depend on each other, so load in parallel
+      injectQuickSearchScript();
       loadCompletionHandler();
     };
     script.onerror = function () {
       customLogger.error(
         "Re-Redash: Failed to load table column visibility script"
       );
+      // Still try to load other scripts even if this fails
+      injectQuickSearchScript();
+      loadCompletionHandler();
     };
 
     (document.head || document.documentElement).appendChild(script);
   } catch (error) {
     customLogger.error(
       "Re-Redash: Error injecting table column visibility script:",
+      error
+    );
+  }
+}
+
+/**
+ * Inject quick search script into the page context (independent)
+ */
+function injectQuickSearchScript() {
+  try {
+    const script = document.createElement("script");
+    script.src = chrome.runtime.getURL("quick-search.js");
+    script.onload = function () {
+      this.remove();
+      customLogger.log("Re-Redash: Quick search script loaded successfully");
+    };
+    script.onerror = function () {
+      customLogger.error("Re-Redash: Failed to load quick search script");
+      // This is a nice-to-have feature, don't break the app if it fails
+      customLogger.warn(
+        "Re-Redash: Quick search (Cmd+K) will not be available"
+      );
+    };
+
+    (document.head || document.documentElement).appendChild(script);
+  } catch (error) {
+    customLogger.error(
+      "Re-Redash: Error injecting quick search script:",
       error
     );
   }

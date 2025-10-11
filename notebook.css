@@ -36,16 +36,6 @@
   background: black;
 }
 
-/* Search icon visibility - hidden by default, shown on parent hover */
-.search-table-icon {
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.schema-list-item:hover .search-table-icon {
-  opacity: 1;
-}
-
 /* Notebook cells container */
 .notebook-cells {
   padding: 0;

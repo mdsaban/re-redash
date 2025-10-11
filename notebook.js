@@ -583,84 +583,6 @@ function handleSchemaListCopyClick(e) {
   insertTableNameIntoActiveCell(tableName);
 }
 
-function injectSearchIcons() {
-  const schemaItems = document.querySelectorAll(".schema-list-item");
-
-  schemaItems.forEach((item) => {
-    if (item.querySelector(".search-table-icon")) return;
-
-    const copyButton = item.querySelector(".copy-to-editor");
-    if (!copyButton) return;
-
-    const searchIcon = document.createElement("i");
-    searchIcon.className = "zmdi zmdi-search search-table-icon";
-    searchIcon.title = "Execute SELECT * FROM table LIMIT 100";
-    searchIcon.style.cssText = `
-      cursor: pointer;
-      margin-right: 8px;
-      color: #1890ff;
-      font-size: 14px;
-      transition: color 0.2s;
-      padding-top: 4px;
-    `;
-
-    // Add tooltip to search icon
-    addTooltip(
-      searchIcon,
-      `Quick query: SELECT * FROM ${item.innerText} LIMIT 100`,
-      "right"
-    );
-
-    searchIcon.addEventListener("mouseenter", function () {
-      this.style.color = "#40a9ff";
-    });
-
-    searchIcon.addEventListener("mouseleave", function () {
-      this.style.color = "#1890ff";
-    });
-
-    copyButton.parentNode.insertBefore(searchIcon, copyButton);
-  });
-}
-
-function handleSearchIconClick(e) {
-  // Check if the clicked element is a search icon
-  const searchIcon = e.target.closest(".search-table-icon");
-
-  if (!searchIcon) return;
-
-  // Prevent default action
-  e.preventDefault();
-  e.stopPropagation();
-
-  // Find the table name
-  const schemaListItem = searchIcon.closest(".schema-list-item");
-  if (!schemaListItem) {
-    customLogger.warn("Re-Redash: Could not find schema-list-item parent");
-    return;
-  }
-
-  const tableNameElement = schemaListItem.querySelector(".table-name strong");
-  if (!tableNameElement) {
-    customLogger.warn("Re-Redash: Could not find table name element");
-    return;
-  }
-
-  const tableName = tableNameElement.textContent.trim();
-  if (!tableName) {
-    customLogger.warn("Re-Redash: Table name is empty");
-    return;
-  }
-
-  customLogger.log(`Re-Redash: Search icon clicked for table: ${tableName}`);
-
-  // Create the SELECT query with LIMIT 100
-  const query = `SELECT * FROM ${tableName} LIMIT 100`;
-
-  customLogger.log(`Re-Redash: Executing query: ${query}`);
-
-  executeTableQuery(query);
-}
 
 function executeTableQuery(query) {
   if (!notebookState.aceEditor) {
@@ -693,6 +615,11 @@ function executeTableQuery(query) {
 
       // Sync to ace editor
       syncCellsToAceEditor();
+
+      // Scroll to the new cell
+      setTimeout(() => {
+        scrollToCell(newCellIndex);
+      }, 50);
 
       // Focus on the new cell
       setTimeout(() => {
@@ -793,17 +720,6 @@ function setupEventListeners() {
 
   // Listen for schema list copy-to-editor button clicks
   document.addEventListener("click", handleSchemaListCopyClick);
-
-  // Listen for search icon clicks to execute SELECT query
-  document.addEventListener("click", handleSearchIconClick);
-
-  // Inject search icons into schema list items
-  // Run initially and then periodically to handle dynamically loaded items
-  setTimeout(() => {
-    injectSearchIcons();
-    // Set up periodic injection to handle dynamic content
-    setInterval(injectSearchIcons, 2000); // Check every 2 seconds
-  }, 1000);
 }
 
 /**
@@ -2005,6 +1921,33 @@ function updateCellFocusState(index) {
   notebookState.lastFocusedCellIndex = index;
   customLogger.log(`Re-Redash: Saved last focused cell index: ${index}`);
 }
+
+
+/**
+ * Scroll to a specific cell to bring it into view
+ * @param {number} index - Cell index to scroll to
+ */
+function scrollToCell(index) {
+  if (index < 0 || index >= notebookState.cells.length) return;
+
+  // Find the cell element
+  const cellElement = document.querySelector(
+    `.notebook-cell:nth-child(${index + 1})`
+  );
+  
+  if (cellElement) {
+    // Scroll the cell into view with smooth animation
+    cellElement.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+      inline: 'nearest'
+    });
+    customLogger.log(`Re-Redash: Scrolled to cell ${index}`);
+  } else {
+    customLogger.warn(`Re-Redash: Could not find cell element ${index} for scrolling`);
+  }
+}
+
 
 /**
  * Focus on a specific cell
